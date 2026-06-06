@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { Car, Eye, EyeOff } from 'lucide-react'
 import { signIn } from 'next-auth/react'
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
+import { getFirebaseAuth } from '@/lib/firebase-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -18,6 +20,17 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const routeUser = async (role?: string) => {
+    await new Promise(r => setTimeout(r, 500))
+    const res = await fetch('/api/auth/session')
+    const session = await res.json()
+    if (role === 'ADMIN' || session?.user?.role === 'ADMIN') {
+      setAdminPage('dashboard')
+    } else {
+      setCustomerPage('home')
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,14 +49,7 @@ export default function LoginScreen() {
         toast.error('Login gagal', { description: 'Email atau password salah' })
       } else if (result?.ok) {
         toast.success('Login berhasil!')
-        await new Promise(r => setTimeout(r, 500))
-        const res = await fetch('/api/auth/session')
-        const session = await res.json()
-        if (session?.user?.role === 'ADMIN') {
-          setAdminPage('dashboard')
-        } else {
-          setCustomerPage('home')
-        }
+        await routeUser()
       }
     } catch {
       setError('Terjadi kesalahan. Silakan coba lagi.')
@@ -56,9 +62,27 @@ export default function LoginScreen() {
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true)
     try {
-      await signIn('google', { callbackUrl: window.location.href })
-    } catch {
-      toast.error('Gagal login dengan Google')
+      const auth = getFirebaseAuth()
+      const provider = new GoogleAuthProvider()
+      const result = await signInWithPopup(auth, provider)
+      const idToken = await result.user.getIdToken()
+
+      const loginResult = await signIn('credentials', {
+        idToken,
+        redirect: false,
+      })
+
+      if (loginResult?.error) {
+        toast.error('Gagal login dengan Google')
+      } else if (loginResult?.ok) {
+        toast.success('Login berhasil!')
+        await routeUser()
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error && (err as { code?: string }).code !== 'auth/popup-closed-by-user') {
+        toast.error('Gagal login dengan Google')
+      }
+    } finally {
       setGoogleLoading(false)
     }
   }

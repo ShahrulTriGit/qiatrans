@@ -1,8 +1,8 @@
 import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import GoogleProvider from 'next-auth/providers/google'
 import { compare } from 'bcryptjs'
 import { db } from '@/lib/firestore'
+import { auth as firebaseAuth } from '@/lib/firebase-admin'
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -11,8 +11,59 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
+        idToken: { label: 'ID Token', type: 'text' },
       },
       async authorize(credentials) {
+        if (credentials?.idToken) {
+          try {
+            const decoded = await firebaseAuth.verifyIdToken(credentials.idToken)
+            const email = decoded.email!
+            const name = decoded.name || email.split('@')[0]
+
+            const adminEmails = (process.env.ADMIN_EMAILS ?? '').split(',').map(e => e.trim().toLowerCase())
+            const isAdmin = adminEmails.includes(email.toLowerCase())
+            const role = isAdmin ? 'ADMIN' : 'CUSTOMER'
+
+            let user = await db.user.findFirst({ where: { email } })
+
+            if (user) {
+              if (user.role !== role) {
+                await db.user.update({
+                  where: { id: user.id as string },
+                  data: { role },
+                })
+              }
+            } else {
+              user = await db.user.create({
+                data: {
+                  nama: name,
+                  email,
+                  password: '',
+                  role,
+                  verified: true,
+                  noTelepon: '',
+                  alamat: '',
+                  fotoProfil: null,
+                  noKTP: null,
+                  noSIM: null,
+                  fotoKTP: null,
+                  fotoSIM: null,
+                },
+              })
+            }
+
+            return {
+              id: user!.id as string,
+              email: user!.email as string,
+              nama: user!.nama as string,
+              name: user!.nama as string,
+              role: user!.role as 'CUSTOMER' | 'ADMIN',
+            }
+          } catch {
+            throw new Error('Token tidak valid')
+          }
+        }
+
         if (!credentials?.email || !credentials?.password) {
           throw new Error('Email dan password harus diisi')
         }
@@ -40,12 +91,6 @@ export const authOptions: NextAuthOptions = {
         }
       },
     }),
-    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
-      ? [GoogleProvider({
-          clientId: process.env.GOOGLE_CLIENT_ID,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        })]
-      : []),
   ],
   pages: {
     signIn: '/auth/login',
@@ -55,59 +100,11 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async signIn({ user, account }) {
-      if (account?.provider === 'google') {
-        const adminEmails = (process.env.ADMIN_EMAILS ?? '').split(',').map(e => e.trim().toLowerCase())
-        const isAdmin = adminEmails.includes(user.email?.toLowerCase() ?? '')
-        const role = isAdmin ? 'ADMIN' : 'CUSTOMER'
-
-        const existing = await db.user.findFirst({
-          where: { email: user.email! },
-        })
-        if (existing) {
-          if (existing.role !== role) {
-            await db.user.update({
-              where: { id: existing.id as string },
-              data: { role },
-            })
-          }
-        } else {
-          await db.user.create({
-            data: {
-              nama: user.name!,
-              email: user.email!,
-              password: '',
-              role,
-              verified: true,
-              noTelepon: '',
-              alamat: '',
-              fotoProfil: null,
-              noKTP: null,
-              noSIM: null,
-              fotoKTP: null,
-              fotoSIM: null,
-            },
-          })
-        }
-      }
-      return true
-    },
     async jwt({ token, user }) {
       if (user) {
-        if ((user as { role?: string }).role) {
-          token.id = user.id
-          token.role = (user as { role: string }).role
-          token.nama = user.name ?? ''
-        } else {
-          const dbUser = await db.user.findFirst({
-            where: { email: user.email! },
-          })
-          if (dbUser) {
-            token.id = dbUser.id as string
-            token.role = dbUser.role as 'CUSTOMER' | 'ADMIN'
-            token.nama = dbUser.nama as string
-          }
-        }
+        token.id = user.id
+        token.role = (user as { role: string }).role
+        token.nama = user.name ?? ''
       }
       return token
     },
