@@ -44,7 +44,14 @@ export async function POST(request: NextRequest) {
         email,
         password: hashedPassword,
         role: role || 'CUSTOMER',
-        ...(noTelepon ? { noTelepon } : {}),
+        verified: false,
+        noTelepon: noTelepon || '',
+        alamat: '',
+        fotoProfil: null,
+        noKTP: null,
+        noSIM: null,
+        fotoKTP: null,
+        fotoSIM: null,
       },
     })
 

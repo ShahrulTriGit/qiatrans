@@ -15,8 +15,13 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search')
+    const role = searchParams.get('role')
 
     const where: Record<string, unknown> = {}
+
+    if (role) {
+      where.role = role
+    }
 
     if (search) {
       where.OR = [
