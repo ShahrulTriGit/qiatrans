@@ -174,8 +174,8 @@ export default function VehicleDetailScreen() {
         </Card>
       </div>
 
-      {/* Floating Booking Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-5 bg-background/95 backdrop-blur-sm border-t z-20">
+      {/* Booking Button */}
+      <div className="px-5 mt-5 pb-4">
         <Button
           onClick={() =>
             setCustomerPage('booking', { vehicleId: vehicle.id })
