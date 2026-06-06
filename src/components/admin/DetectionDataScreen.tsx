@@ -138,7 +138,7 @@ export default function DetectionDataScreen() {
           {filteredDetections.map((detection) => (
             <Card key={detection.id} className="overflow-hidden">
               {/* Image thumbnails */}
-              <div className="flex h-32 bg-muted">
+              <div className="flex h-40 sm:h-32 bg-muted">
                 <div className="flex-1 relative overflow-hidden">
                   {detection.gambarAsli ? (
                     <img
@@ -151,7 +151,7 @@ export default function DetectionDataScreen() {
                       <ScanEye className="w-8 h-8 text-muted-foreground/50" />
                     </div>
                   )}
-                  <span className="absolute bottom-1 left-1 text-[10px] bg-black/60 text-white px-1.5 py-0.5 rounded">
+                  <span className="absolute bottom-1 left-1 text-[11px] sm:text-xs bg-black/60 text-white px-1.5 py-0.5 rounded">
                     Asli
                   </span>
                 </div>
@@ -167,7 +167,7 @@ export default function DetectionDataScreen() {
                       <ScanEye className="w-8 h-8 text-muted-foreground/50" />
                     </div>
                   )}
-                  <span className="absolute bottom-1 left-1 text-[10px] bg-black/60 text-white px-1.5 py-0.5 rounded">
+                  <span className="absolute bottom-1 left-1 text-[11px] sm:text-xs bg-black/60 text-white px-1.5 py-0.5 rounded">
                     Hasil
                   </span>
                 </div>
