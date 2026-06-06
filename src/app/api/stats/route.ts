@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db } from '@/lib/firestore'
 
 export async function GET() {
   try {
@@ -11,7 +11,7 @@ export async function GET() {
       pendingBookings,
       totalCustomers,
       availableVehicles,
-      revenueResult,
+      revenueRentals,
     ] = await Promise.all([
       db.vehicle.count(),
       db.rental.count({ where: { status: 'ACTIVE' } }),
@@ -20,15 +20,15 @@ export async function GET() {
       db.rental.count({ where: { status: 'PENDING' } }),
       db.user.count({ where: { role: 'CUSTOMER' } }),
       db.vehicle.count({ where: { status: 'TERSEDIA' } }),
-      db.rental.aggregate({
-        _sum: { totalHarga: true },
-        where: {
-          status: { in: ['ACTIVE', 'COMPLETED'] },
-        },
+      db.rental.findMany({
+        where: { status: { in: ['ACTIVE', 'COMPLETED'] } },
       }),
     ])
 
-    const totalRevenue = revenueResult._sum.totalHarga || 0
+    const totalRevenue = (revenueRentals || []).reduce(
+      (sum: number, r: Record<string, unknown>) => sum + (Number(r.totalHarga) || 0),
+      0
+    )
 
     const stats = {
       totalVehicles,

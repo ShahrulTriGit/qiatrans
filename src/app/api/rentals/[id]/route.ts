@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from 'next-auth/react'
-import { db } from '@/lib/db'
+import { db } from '@/lib/firestore'
 
 export async function GET(
   request: NextRequest,
@@ -8,27 +8,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const rental = await db.rental.findUnique({
-      where: { id },
-      include: {
-        user: {
-          select: {
-            id: true,
-            nama: true,
-            email: true,
-            noTelepon: true,
-            role: true,
-            alamat: true,
-          },
-        },
-        vehicle: true,
-        inspections: {
-          include: {
-            detections: true,
-          },
-        },
-      },
-    })
+    const rental = await db.rental.findUnique({ where: { id } })
 
     if (!rental) {
       return NextResponse.json(
@@ -37,7 +17,23 @@ export async function GET(
       )
     }
 
-    return NextResponse.json({ success: true, data: rental })
+    const r = rental as Record<string, string>
+    const user = await db.user.findUnique({ where: { id: r.userId } })
+    const vehicle = await db.vehicle.findUnique({ where: { id: r.vehicleId } })
+    const inspections = await db.inspection.findMany({ where: { rentalId: id } })
+    const inspectionsWithDetections = await Promise.all(
+      (inspections || []).map(async (ins) => {
+        const dets = await db.detectionResult.findMany({ where: { inspectionId: (ins as Record<string, string>).id } })
+        return { ...ins, detections: dets || [] }
+      })
+    )
+
+    const { password, ...userWithoutPassword } = (user as Record<string, unknown>) || {}
+
+    return NextResponse.json({
+      success: true,
+      data: { ...rental, user: userWithoutPassword, vehicle, inspections: inspectionsWithDetections },
+    })
   } catch (error) {
     console.error('Get rental error:', error)
     return NextResponse.json(
@@ -56,9 +52,7 @@ export async function PUT(
     const { id } = await params
     const body = await request.json()
 
-    const existingRental = await db.rental.findUnique({
-      where: { id },
-    })
+    const existingRental = await db.rental.findUnique({ where: { id } })
 
     if (!existingRental) {
       return NextResponse.json(
@@ -67,27 +61,25 @@ export async function PUT(
       )
     }
 
+    const existing = existingRental as Record<string, string>
     const updateData: Record<string, unknown> = {}
 
-    // Admin can change status to any value
     if (body.status && session && session.user.role === 'ADMIN') {
       updateData.status = body.status
 
-      // If status is ACTIVE, update vehicle status
       if (body.status === 'ACTIVE') {
         await db.vehicle.update({
-          where: { id: existingRental.vehicleId },
+          where: { id: existing.vehicleId },
           data: { status: 'DISEWA' },
         })
       }
 
-      // If status is COMPLETED or CANCELLED, make vehicle available again
       if (body.status === 'COMPLETED' || body.status === 'CANCELLED') {
         await db.vehicle.update({
-          where: { id: existingRental.vehicleId },
+          where: { id: existing.vehicleId },
           data: { status: 'TERSEDIA' },
         })
-        updateData.tanggalPengembalian = new Date()
+        updateData.tanggalPengembalian = new Date().toISOString()
       }
     }
 
@@ -105,23 +97,16 @@ export async function PUT(
     const rental = await db.rental.update({
       where: { id },
       data: updateData,
-      include: {
-        user: {
-          select: {
-            id: true,
-            nama: true,
-            email: true,
-            noTelepon: true,
-            role: true,
-          },
-        },
-        vehicle: true,
-      },
     })
+
+    const r = rental as Record<string, string>
+    const user = await db.user.findUnique({ where: { id: r.userId } })
+    const vehicle = await db.vehicle.findUnique({ where: { id: r.vehicleId } })
+    const { password, ...userWithoutPassword } = (user as Record<string, unknown>) || {}
 
     return NextResponse.json({
       success: true,
-      data: rental,
+      data: { ...rental, user: userWithoutPassword, vehicle },
       message: 'Rental berhasil diperbarui',
     })
   } catch (error) {

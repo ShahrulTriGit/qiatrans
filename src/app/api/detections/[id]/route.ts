@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db } from '@/lib/firestore'
 
 export async function GET(
   request: NextRequest,
@@ -7,17 +7,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const detection = await db.detectionResult.findUnique({
-      where: { id },
-      include: {
-        inspection: {
-          include: {
-            vehicle: true,
-            rental: true,
-          },
-        },
-      },
-    })
+    const detection = await db.detectionResult.findUnique({ where: { id } })
 
     if (!detection) {
       return NextResponse.json(
@@ -26,7 +16,20 @@ export async function GET(
       )
     }
 
-    return NextResponse.json({ success: true, data: detection })
+    const d = detection as Record<string, string>
+    const inspection = await db.inspection.findUnique({ where: { id: d.inspectionId } })
+    let vehicle = null
+    let rental = null
+    if (inspection) {
+      const ins = inspection as Record<string, string>
+      vehicle = await db.vehicle.findUnique({ where: { id: ins.vehicleId } })
+      rental = await db.rental.findUnique({ where: { id: ins.rentalId } })
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: { ...detection, inspection: inspection ? { ...inspection, vehicle, rental } : null },
+    })
   } catch (error) {
     console.error('Get detection error:', error)
     return NextResponse.json(

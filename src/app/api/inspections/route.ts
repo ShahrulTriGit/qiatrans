@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db } from '@/lib/firestore'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,25 +14,28 @@ export async function GET(request: NextRequest) {
 
     const inspections = await db.inspection.findMany({
       where,
-      include: {
-        vehicle: true,
-        rental: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                nama: true,
-                email: true,
-              },
-            },
-          },
-        },
-        detections: true,
-      },
       orderBy: { createdAt: 'desc' },
     })
 
-    return NextResponse.json({ success: true, data: inspections })
+    const inspectionsWithRelations = await Promise.all(
+      (inspections || []).map(async (ins) => {
+        const i = ins as Record<string, string>
+        const vehicle = await db.vehicle.findUnique({ where: { id: i.vehicleId } })
+        const rental = await db.rental.findUnique({ where: { id: i.rentalId } })
+        const detections = await db.detectionResult.findMany({ where: { inspectionId: i.id } })
+
+        let user = null
+        if (rental) {
+          user = await db.user.findUnique({ where: { id: (rental as Record<string, string>).userId } })
+          const { password, ...u } = (user as Record<string, unknown>) || {}
+          user = u
+        }
+
+        return { ...ins, vehicle, rental: rental ? { ...rental, user } : null, detections: detections || [] }
+      })
+    )
+
+    return NextResponse.json({ success: true, data: inspectionsWithRelations })
   } catch (error) {
     console.error('Get inspections error:', error)
     return NextResponse.json(
@@ -62,14 +65,14 @@ export async function POST(request: NextRequest) {
         catatan: catatan || null,
         status: 'PENDING',
       },
-      include: {
-        vehicle: true,
-        rental: true,
-      },
     })
 
+    const ins = inspection as Record<string, string>
+    const vehicle = await db.vehicle.findUnique({ where: { id: ins.vehicleId } })
+    const rental = await db.rental.findUnique({ where: { id: ins.rentalId } })
+
     return NextResponse.json(
-      { success: true, data: inspection, message: 'Inspeksi berhasil dibuat' },
+      { success: true, data: { ...inspection, vehicle, rental }, message: 'Inspeksi berhasil dibuat' },
       { status: 201 }
     )
   } catch (error) {

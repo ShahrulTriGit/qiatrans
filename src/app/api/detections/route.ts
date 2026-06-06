@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db } from '@/lib/firestore'
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,17 +12,22 @@ export async function GET(request: NextRequest) {
 
     const detections = await db.detectionResult.findMany({
       where,
-      include: {
-        inspection: {
-          include: {
-            vehicle: true,
-          },
-        },
-      },
       orderBy: { createdAt: 'desc' },
     })
 
-    return NextResponse.json({ success: true, data: detections })
+    const detectionsWithRelations = await Promise.all(
+      (detections || []).map(async (det) => {
+        const d = det as Record<string, string>
+        const inspection = await db.inspection.findUnique({ where: { id: d.inspectionId } })
+        let vehicle = null
+        if (inspection) {
+          vehicle = await db.vehicle.findUnique({ where: { id: (inspection as Record<string, string>).vehicleId } })
+        }
+        return { ...det, inspection: inspection ? { ...inspection, vehicle } : null }
+      })
+    )
+
+    return NextResponse.json({ success: true, data: detectionsWithRelations })
   } catch (error) {
     console.error('Get detections error:', error)
     return NextResponse.json(

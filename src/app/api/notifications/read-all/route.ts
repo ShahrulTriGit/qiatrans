@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db } from '@/lib/firestore'
 
 export async function PUT(request: NextRequest) {
   try {

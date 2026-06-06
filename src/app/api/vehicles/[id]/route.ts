@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from 'next-auth/react'
-import { db } from '@/lib/db'
+import { db } from '@/lib/firestore'
 
 export async function GET(
   request: NextRequest,

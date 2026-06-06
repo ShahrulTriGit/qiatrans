@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db } from '@/lib/firestore'
 
 export async function GET(
   request: NextRequest,
@@ -7,24 +7,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const inspection = await db.inspection.findUnique({
-      where: { id },
-      include: {
-        vehicle: true,
-        rental: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                nama: true,
-                email: true,
-              },
-            },
-          },
-        },
-        detections: true,
-      },
-    })
+    const inspection = await db.inspection.findUnique({ where: { id } })
 
     if (!inspection) {
       return NextResponse.json(
@@ -33,7 +16,22 @@ export async function GET(
       )
     }
 
-    return NextResponse.json({ success: true, data: inspection })
+    const ins = inspection as Record<string, string>
+    const vehicle = await db.vehicle.findUnique({ where: { id: ins.vehicleId } })
+    const rental = await db.rental.findUnique({ where: { id: ins.rentalId } })
+    const detections = await db.detectionResult.findMany({ where: { inspectionId: id } })
+
+    let user = null
+    if (rental) {
+      user = await db.user.findUnique({ where: { id: (rental as Record<string, string>).userId } })
+      const { password, ...u } = (user as Record<string, unknown>) || {}
+      user = u
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: { ...inspection, vehicle, rental: rental ? { ...rental, user } : null, detections: detections || [] },
+    })
   } catch (error) {
     console.error('Get inspection error:', error)
     return NextResponse.json(
@@ -51,9 +49,7 @@ export async function PUT(
     const { id } = await params
     const body = await request.json()
 
-    const existingInspection = await db.inspection.findUnique({
-      where: { id },
-    })
+    const existingInspection = await db.inspection.findUnique({ where: { id } })
 
     if (!existingInspection) {
       return NextResponse.json(
@@ -70,16 +66,16 @@ export async function PUT(
     const inspection = await db.inspection.update({
       where: { id },
       data: updateData,
-      include: {
-        vehicle: true,
-        rental: true,
-        detections: true,
-      },
     })
+
+    const ins = inspection as Record<string, string>
+    const vehicle = await db.vehicle.findUnique({ where: { id: ins.vehicleId } })
+    const rental = await db.rental.findUnique({ where: { id: ins.rentalId } })
+    const detections = await db.detectionResult.findMany({ where: { inspectionId: id } })
 
     return NextResponse.json({
       success: true,
-      data: inspection,
+      data: { ...inspection, vehicle, rental, detections: detections || [] },
       message: 'Inspeksi berhasil diperbarui',
     })
   } catch (error) {

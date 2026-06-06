@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db } from '@/lib/firestore'
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,22 +16,19 @@ export async function GET(request: NextRequest) {
 
     const rentals = await db.rental.findMany({
       where,
-      include: {
-        user: {
-          select: {
-            id: true,
-            nama: true,
-            email: true,
-            noTelepon: true,
-            role: true,
-          },
-        },
-        vehicle: true,
-      },
       orderBy: { createdAt: 'desc' },
     })
 
-    return NextResponse.json({ success: true, data: rentals })
+    const rentalsWithRelations = await Promise.all(
+      rentals.map(async (rental) => {
+        const user = await db.user.findUnique({ where: { id: (rental as Record<string, string>).userId } })
+        const vehicle = await db.vehicle.findUnique({ where: { id: (rental as Record<string, string>).vehicleId } })
+        const { password, ...userWithoutPassword } = (user as Record<string, unknown>) || {}
+        return { ...rental, user: userWithoutPassword, vehicle }
+      })
+    )
+
+    return NextResponse.json({ success: true, data: rentalsWithRelations })
   } catch (error) {
     console.error('Get rentals error:', error)
     return NextResponse.json(
@@ -64,23 +61,11 @@ export async function POST(request: NextRequest) {
       data: {
         userId,
         vehicleId,
-        tanggalSewa: new Date(tanggalSewa),
-        tanggalKembali: new Date(tanggalKembali),
+        tanggalSewa: new Date(tanggalSewa).toISOString(),
+        tanggalKembali: new Date(tanggalKembali).toISOString(),
         totalHarga: Number(totalHarga),
         catatan: catatan || null,
         status: 'PENDING',
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            nama: true,
-            email: true,
-            noTelepon: true,
-            role: true,
-          },
-        },
-        vehicle: true,
       },
     })
 

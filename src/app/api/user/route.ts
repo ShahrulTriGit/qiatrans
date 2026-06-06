@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from 'next-auth/react'
-import { db } from '@/lib/db'
+import { db } from '@/lib/firestore'
 import { compare, hash } from 'bcryptjs'
 
 // GET /api/user - Get current user profile
@@ -16,22 +16,6 @@ export async function GET(request: NextRequest) {
 
     const user = await db.user.findUnique({
       where: { id: session.user.id },
-      select: {
-        id: true,
-        nama: true,
-        email: true,
-        role: true,
-        fotoProfil: true,
-        noKTP: true,
-        noSIM: true,
-        fotoKTP: true,
-        fotoSIM: true,
-        alamat: true,
-        noTelepon: true,
-        verified: true,
-        createdAt: true,
-        updatedAt: true,
-      },
     })
 
     if (!user) {
@@ -41,7 +25,9 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ success: true, data: user })
+    const { password, ...userWithoutPassword } = user as Record<string, unknown>
+
+    return NextResponse.json({ success: true, data: userWithoutPassword })
   } catch (error) {
     console.error('Get user profile error:', error)
     return NextResponse.json(
@@ -83,26 +69,12 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const user = await db.user.update({
+    const updatedUser = await db.user.update({
       where: { id: session.user.id },
       data: updateData,
-      select: {
-        id: true,
-        nama: true,
-        email: true,
-        role: true,
-        fotoProfil: true,
-        noKTP: true,
-        noSIM: true,
-        fotoKTP: true,
-        fotoSIM: true,
-        alamat: true,
-        noTelepon: true,
-        verified: true,
-        createdAt: true,
-        updatedAt: true,
-      },
     })
+
+    const { password, ...user } = updatedUser as Record<string, unknown>
 
     return NextResponse.json({
       success: true,

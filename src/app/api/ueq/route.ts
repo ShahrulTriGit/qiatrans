@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db } from '@/lib/firestore'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,24 +14,24 @@ export async function GET(request: NextRequest) {
 
     const ueqResults = await db.uEQResult.findMany({
       where,
-      include: {
-        user: {
-          select: {
-            id: true,
-            nama: true,
-            email: true,
-          },
-        },
-        rental: {
-          include: {
-            vehicle: true,
-          },
-        },
-      },
       orderBy: { createdAt: 'desc' },
     })
 
-    return NextResponse.json({ success: true, data: ueqResults })
+    const ueqWithRelations = await Promise.all(
+      (ueqResults || []).map(async (ueq) => {
+        const u = ueq as Record<string, string>
+        const user = await db.user.findUnique({ where: { id: u.userId } })
+        const rental = await db.rental.findUnique({ where: { id: u.rentalId } })
+        let vehicle = null
+        if (rental) {
+          vehicle = await db.vehicle.findUnique({ where: { id: (rental as Record<string, string>).vehicleId } })
+        }
+        const { password, ...userWithoutPassword } = (user as Record<string, unknown>) || {}
+        return { ...ueq, user: userWithoutPassword, rental: rental ? { ...rental, vehicle } : null }
+      })
+    )
+
+    return NextResponse.json({ success: true, data: ueqWithRelations })
   } catch (error) {
     console.error('Get UEQ results error:', error)
     return NextResponse.json(

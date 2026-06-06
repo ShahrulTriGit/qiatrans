@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db } from '@/lib/firestore'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,24 +14,24 @@ export async function GET(request: NextRequest) {
 
     const susResults = await db.sUSResult.findMany({
       where,
-      include: {
-        user: {
-          select: {
-            id: true,
-            nama: true,
-            email: true,
-          },
-        },
-        rental: {
-          include: {
-            vehicle: true,
-          },
-        },
-      },
       orderBy: { createdAt: 'desc' },
     })
 
-    return NextResponse.json({ success: true, data: susResults })
+    const susWithRelations = await Promise.all(
+      (susResults || []).map(async (sus) => {
+        const s = sus as Record<string, string>
+        const user = await db.user.findUnique({ where: { id: s.userId } })
+        const rental = await db.rental.findUnique({ where: { id: s.rentalId } })
+        let vehicle = null
+        if (rental) {
+          vehicle = await db.vehicle.findUnique({ where: { id: (rental as Record<string, string>).vehicleId } })
+        }
+        const { password, ...userWithoutPassword } = (user as Record<string, unknown>) || {}
+        return { ...sus, user: userWithoutPassword, rental: rental ? { ...rental, vehicle } : null }
+      })
+    )
+
+    return NextResponse.json({ success: true, data: susWithRelations })
   } catch (error) {
     console.error('Get SUS results error:', error)
     return NextResponse.json(

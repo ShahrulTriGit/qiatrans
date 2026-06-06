@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from 'next-auth/react'
-import { db } from '@/lib/db'
+import { db } from '@/lib/firestore'
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,24 +27,15 @@ export async function GET(request: NextRequest) {
 
     const users = await db.user.findMany({
       where,
-      select: {
-        id: true,
-        nama: true,
-        email: true,
-        role: true,
-        fotoProfil: true,
-        noKTP: true,
-        noSIM: true,
-        noTelepon: true,
-        alamat: true,
-        verified: true,
-        createdAt: true,
-        updatedAt: true,
-      },
       orderBy: { createdAt: 'desc' },
     })
 
-    return NextResponse.json({ success: true, data: users })
+    const usersWithoutPassword = (users || []).map((u) => {
+      const { password, ...rest } = u as Record<string, unknown>
+      return rest
+    })
+
+    return NextResponse.json({ success: true, data: usersWithoutPassword })
   } catch (error) {
     console.error('Get users error:', error)
     return NextResponse.json(
@@ -94,26 +85,12 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const user = await db.user.update({
+    const updatedUser = await db.user.update({
       where: { id: targetUserId },
       data: updateData,
-      select: {
-        id: true,
-        nama: true,
-        email: true,
-        role: true,
-        fotoProfil: true,
-        noKTP: true,
-        noSIM: true,
-        fotoKTP: true,
-        fotoSIM: true,
-        alamat: true,
-        noTelepon: true,
-        verified: true,
-        createdAt: true,
-        updatedAt: true,
-      },
     })
+
+    const { password, ...user } = (updatedUser as Record<string, unknown>) || {}
 
     return NextResponse.json({
       success: true,
