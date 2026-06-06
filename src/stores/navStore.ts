@@ -13,6 +13,7 @@ export type CustomerPage =
   | 'inspection-after'
   | 'detection-result'
   | 'inspection-history'
+  | 'damage-comparison'
   | 'sus-feedback'
   | 'ueq-feedback'
   | 'profile'

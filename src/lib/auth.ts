@@ -33,8 +33,9 @@ export const authOptions: NextAuthOptions = {
         return {
           id: user.id,
           email: user.email,
+          nama: user.nama,
           name: user.nama,
-          role: user.role,
+          role: user.role as 'CUSTOMER' | 'ADMIN',
         }
       },
     }),
@@ -45,20 +46,20 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
   },
-  secret: process.env.NEXTAUTH_SECRET || 'qiatrans-secret-key-2024',
+  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
         token.role = (user as { role: string }).role
-        token.nama = user.name
+        token.nama = user.name ?? ''
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
-        session.user.role = token.role as string
+        session.user.role = token.role as 'CUSTOMER' | 'ADMIN'
         session.user.nama = token.nama as string
       }
       return session

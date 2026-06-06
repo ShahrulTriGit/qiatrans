@@ -29,6 +29,7 @@ export default function RentalHistoryScreen() {
   const { data: session } = useSession()
   const [rentals, setRentals] = useState<Rental[]>([])
   const [loading, setLoading] = useState(true)
+  const [evaluatedRentals, setEvaluatedRentals] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (session?.user?.id) fetchRentals()
@@ -41,6 +42,30 @@ export default function RentalHistoryScreen() {
       )
       const data = await res.json()
       if (data.success) setRentals(data.data || [])
+
+      // Fetch existing SUS and UEQ results to determine which rentals are already evaluated
+      const evaluatedIds = new Set<string>()
+      try {
+        const [susRes, ueqRes] = await Promise.all([
+          fetch('/api/sus?userId=' + session?.user?.id),
+          fetch('/api/ueq?userId=' + session?.user?.id),
+        ])
+        const susData = await susRes.json()
+        const ueqData = await ueqRes.json()
+        if (susData.success && Array.isArray(susData.data)) {
+          susData.data.forEach((r: { rentalId?: string }) => {
+            if (r.rentalId) evaluatedIds.add(r.rentalId)
+          })
+        }
+        if (ueqData.success && Array.isArray(ueqData.data)) {
+          ueqData.data.forEach((r: { rentalId?: string }) => {
+            if (r.rentalId) evaluatedIds.add(r.rentalId)
+          })
+        }
+      } catch {
+        // silently fail - will show evaluation buttons if can't confirm
+      }
+      setEvaluatedRentals(evaluatedIds)
     } catch {
       // silently fail
     } finally {
@@ -104,8 +129,8 @@ export default function RentalHistoryScreen() {
                   : 'bg-info/10 text-info'
 
             // For completed rentals, check if they need evaluation
-            // This is a simplified check - in real app, you'd check for SUS/UEQ results
-            const needsEvaluation = rental.status === 'COMPLETED'
+            // Only show evaluation buttons if the user hasn't already submitted feedback
+            const needsEvaluation = rental.status === 'COMPLETED' && !evaluatedRentals.has(rental.id)
 
             return (
               <Card

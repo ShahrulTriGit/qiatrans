@@ -9,8 +9,6 @@ import {
   Edit,
   Trash2,
   Car,
-  Filter,
-  X,
 } from 'lucide-react'
 import {
   Card,
@@ -79,7 +77,7 @@ function formatCurrency(amount: number) {
 function getStatusColor(status: Vehicle['status']) {
   switch (status) {
     case 'TERSEDIA': return 'bg-success/10 text-success border-success/20'
-    case 'DISERWA': return 'bg-warning/10 text-warning border-warning/20'
+    case 'DISEWA': return 'bg-warning/10 text-warning border-warning/20'
     case 'MAINTENANCE': return 'bg-destructive/10 text-destructive border-destructive/20'
     default: return 'bg-muted text-muted-foreground'
   }
@@ -258,7 +256,7 @@ export default function VehicleManagementScreen() {
           <SelectContent>
             <SelectItem value="all">Semua Status</SelectItem>
             <SelectItem value="TERSEDIA">Tersedia</SelectItem>
-            <SelectItem value="DISERWA">Disewa</SelectItem>
+            <SelectItem value="DISEWA">Disewa</SelectItem>
             <SelectItem value="MAINTENANCE">Maintenance</SelectItem>
           </SelectContent>
         </Select>

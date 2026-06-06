@@ -19,7 +19,6 @@ import {
   AlertTriangle,
   Car,
   Save,
-  ImagePlus,
   X,
 } from 'lucide-react'
 import type { Inspection, DetectionResult } from '@/types'
@@ -60,7 +59,7 @@ function generateMockDetections(imageUrl: string): DetectionResult[] {
 
 export default function InspectionBeforeScreen() {
   const { data: session } = useSession()
-  const { selectedRentalId, goBack, setCustomerPage } = useNavStore()
+  const { selectedRentalId, selectedVehicleId, goBack, setCustomerPage } = useNavStore()
 
   const [currentStep, setCurrentStep] = useState<Step>('upload')
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
@@ -122,7 +121,7 @@ export default function InspectionBeforeScreen() {
       // Use local preview as fallback
       setUploadedUrl(selectedImage!)
       setCurrentStep('detect')
-      toast.success('Gambar berhasil diunggah')
+      toast.warning('Gambar disimpan secara lokal')
     } finally {
       setIsUploading(false)
     }
@@ -212,11 +211,53 @@ export default function InspectionBeforeScreen() {
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      await new Promise((r) => setTimeout(r, 1000))
+      // Step 1: Create inspection record
+      let inspectionId = inspectionData?.id
+      if (!inspectionId) {
+        const inspRes = await fetch('/api/inspections', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            rentalId: selectedRentalId,
+            vehicleId: selectedVehicleId,
+            jenisInspeksi: 'SEBELUM_RENTAL',
+            catatan: '',
+          }),
+        })
+        const inspData = await inspRes.json()
+        if (!inspData.success) {
+          throw new Error(inspData.error || 'Gagal membuat inspeksi')
+        }
+        inspectionId = inspData.data.id
+      }
+
+      // Step 2: Save each detection result
+      for (const det of detectionResults) {
+        await fetch('/api/detections', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            inspectionId,
+            lokasiLecet: det.lokasiLecet,
+            confidence: det.confidence,
+            gambarAsli: det.gambarAsli,
+            gambarHasil: det.gambarHasil,
+            severity: det.severity,
+          }),
+        })
+      }
+
+      // Step 3: Mark inspection as COMPLETED
+      await fetch(`/api/inspections/${inspectionId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'COMPLETED' }),
+      })
+
       toast.success('Hasil inspeksi berhasil disimpan')
       goBack()
     } catch {
-      toast.error('Gagal menyimpan hasil')
+      toast.error('Gagal menyimpan hasil inspeksi')
     } finally {
       setIsSaving(false)
     }
@@ -375,17 +416,7 @@ export default function InspectionBeforeScreen() {
                 >
                   <X className="size-4" />
                 </Button>
-                {/* Simulated bounding box overlay */}
-                <div className="absolute top-[20%] left-[15%] w-[30%] h-[25%] border-2 border-yellow-400 rounded-sm">
-                  <span className="absolute -top-5 left-0 bg-yellow-400 text-black text-[10px] px-1 rounded">
-                    Scanning...
-                  </span>
-                </div>
-                <div className="absolute bottom-[25%] right-[20%] w-[25%] h-[20%] border-2 border-green-400 rounded-sm opacity-50">
-                  <span className="absolute -top-5 left-0 bg-green-400 text-black text-[10px] px-1 rounded">
-                    OK
-                  </span>
-                </div>
+
               </div>
 
               <Button

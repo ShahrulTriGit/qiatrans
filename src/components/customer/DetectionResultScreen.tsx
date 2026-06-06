@@ -82,7 +82,7 @@ const MOCK_INSPECTION: Inspection = {
     transmisi: 'Automatic',
     bahanBakar: 'Bensin',
     kapasitas: 7,
-    status: 'DISERWA',
+    status: 'DISEWA',
     foto: '',
     deskripsi: '',
     createdAt: new Date().toISOString(),
@@ -97,6 +97,31 @@ export default function DetectionResultScreen() {
   const [detections, setDetections] = useState<DetectionResult[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [imageTab, setImageTab] = useState('annotated')
+  const [isMockData, setIsMockData] = useState(false)
+
+  if (!selectedInspectionId) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="sticky top-0 z-10 bg-primary text-primary-foreground px-4 py-3 flex items-center gap-3 shadow-md">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-primary-foreground hover:bg-primary/80"
+            onClick={goBack}
+          >
+            <ArrowLeft className="size-5" />
+          </Button>
+          <h1 className="text-lg font-semibold">Hasil Deteksi</h1>
+        </div>
+        <div className="p-4 flex flex-col items-center justify-center gap-3 py-20">
+          <ScanSearch className="size-12 text-muted-foreground" />
+          <p className="font-semibold text-muted-foreground">Inspeksi tidak ditemukan</p>
+          <p className="text-xs text-muted-foreground text-center">Silakan pilih inspeksi dari riwayat</p>
+          <Button variant="outline" onClick={goBack}>Kembali</Button>
+        </div>
+      </div>
+    )
+  }
 
   useEffect(() => {
     fetchInspectionData()
@@ -104,6 +129,7 @@ export default function DetectionResultScreen() {
 
   const fetchInspectionData = async () => {
     setIsLoading(true)
+    setIsMockData(false)
     try {
       const res = await fetch(`/api/inspections/${selectedInspectionId}`)
       const data = await res.json()
@@ -115,11 +141,13 @@ export default function DetectionResultScreen() {
         // Use mock data
         setInspection(MOCK_INSPECTION)
         setDetections(MOCK_DETECTIONS)
+        setIsMockData(true)
       }
     } catch {
       // Use mock data
       setInspection(MOCK_INSPECTION)
       setDetections(MOCK_DETECTIONS)
+      setIsMockData(true)
     } finally {
       setIsLoading(false)
     }
@@ -136,14 +164,6 @@ export default function DetectionResultScreen() {
       default:
         return <Badge variant="outline">{severity}</Badge>
     }
-  }
-
-  const getConfidenceBadge = (confidence: number) => {
-    if (confidence > 0.8)
-      return <Badge className="bg-green-100 text-green-800 border-green-200">{Math.round(confidence * 100)}%</Badge>
-    if (confidence > 0.5)
-      return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">{Math.round(confidence * 100)}%</Badge>
-    return <Badge className="bg-orange-100 text-orange-800 border-orange-200">{Math.round(confidence * 100)}%</Badge>
   }
 
   const getConfidenceColor = (confidence: number) => {
@@ -208,6 +228,14 @@ export default function DetectionResultScreen() {
       </div>
 
       <div className="p-4 space-y-4 max-w-lg mx-auto pb-8">
+        {/* Mock Data Warning Banner */}
+        {isMockData && (
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800">
+            <AlertTriangle className="size-4 shrink-0" />
+            <p className="text-xs font-medium">Data demo - koneksi API gagal</p>
+          </div>
+        )}
+
         {/* Vehicle & Inspection Info */}
         {inspection && (
           <Card>
@@ -278,8 +306,8 @@ export default function DetectionResultScreen() {
                       key={det.id}
                       className="absolute border-2 rounded-sm"
                       style={{
-                        top: `${15 + idx * 20}%`,
-                        left: `${10 + idx * 15}%`,
+                        top: `${15 + (idx % 4) * 20}%`,
+                        left: `${10 + (idx % 3) * 25}%`,
                         width: '25%',
                         height: '18%',
                         borderColor:

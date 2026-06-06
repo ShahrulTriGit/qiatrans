@@ -6,7 +6,6 @@ import { toast } from 'sonner'
 import {
   Search,
   ClipboardCheck,
-  ArrowRight,
   Eye,
 } from 'lucide-react'
 import {

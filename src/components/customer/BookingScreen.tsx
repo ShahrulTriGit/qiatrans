@@ -40,7 +40,14 @@ export default function BookingScreen() {
     try {
       const res = await fetch(`/api/vehicles/${selectedVehicleId}`)
       const data = await res.json()
-      if (data.success) setVehicle(data.data)
+      if (data.success) {
+        setVehicle(data.data)
+        if (data.data?.status && data.data.status !== 'TERSEDIA') {
+          toast.warning('Kendaraan sedang tidak tersedia', {
+            description: `Status: ${data.data.status}`,
+          })
+        }
+      }
     } catch {
       // silently fail
     } finally {
@@ -61,6 +68,10 @@ export default function BookingScreen() {
   }, [vehicle, days])
 
   const handleSubmit = async () => {
+    if (!selectedVehicleId) {
+      toast.error('Kendaraan tidak valid, silakan pilih ulang')
+      return
+    }
     if (!tanggalSewa || !tanggalKembali) {
       toast.error('Pilih tanggal sewa dan tanggal kembali')
       return
@@ -71,6 +82,12 @@ export default function BookingScreen() {
     }
     if (!session?.user?.id) {
       toast.error('Sesi tidak valid, silakan login ulang')
+      return
+    }
+    if (vehicle && vehicle.status !== 'TERSEDIA') {
+      toast.error('Kendaraan tidak tersedia untuk disewa', {
+        description: `Status kendaraan: ${vehicle.status}`,
+      })
       return
     }
 
@@ -269,7 +286,7 @@ export default function BookingScreen() {
       <div className="fixed bottom-0 left-0 right-0 p-5 bg-background/95 backdrop-blur-sm border-t z-20">
         <Button
           onClick={handleSubmit}
-          disabled={submitting || days === 0}
+          disabled={submitting || days === 0 || !selectedVehicleId || (vehicle !== null && vehicle.status !== 'TERSEDIA')}
           className="w-full h-12 text-base font-semibold rounded-xl"
         >
           {submitting ? 'Memproses...' : 'Konfirmasi Booking'}

@@ -23,6 +23,7 @@ import {
   CarouselItem,
 } from '@/components/ui/carousel'
 import { useNavStore } from '@/stores/navStore'
+import { useAppStore } from '@/stores/appStore'
 import type { Vehicle } from '@/types'
 
 const categories = [
@@ -50,6 +51,7 @@ const formatPrice = (price: number) =>
 
 export default function HomeScreen() {
   const { setCustomerPage } = useNavStore()
+  const { setSearchQuery } = useAppStore()
   const { data: session } = useSession()
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [loading, setLoading] = useState(true)
@@ -113,7 +115,10 @@ export default function HomeScreen() {
             placeholder="Cari mobil..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            onFocus={() => setCustomerPage('vehicle-list')}
+            onFocus={() => {
+              setSearchQuery(search)
+              setCustomerPage('vehicle-list')
+            }}
             className="h-11 rounded-xl pl-10 bg-white/95 border-0 shadow-sm"
           />
         </div>

@@ -46,53 +46,31 @@ const UEQ_ITEMS: Array<{ left: string; right: string }> = [
   { left: 'tidak berguna', right: 'berguna' },
 ]
 
-// UEQ scale items mapping (1-indexed as per UEQ standard)
-const UEQ_SCALES = {
-  Attractiveness: [1, 12, 14, 16, 24], // items: 1,12,14,16,24
-  Perspicuity: [2, 4, 13, 21],         // items: 2,4,13,21 (corrected from standard)
-  Efficiency: [3, 10, 19, 23],          // items: 3,10,19,23 (corrected)
-  Dependability: [4, 8, 9, 11],         // items: 4,8,9,11 (corrected)
-  Stimulation: [5, 6, 7, 18],           // items: 5,6,7,18 (corrected)
-  Novelty: [5, 7, 11, 12],              // items: 5,7,11,12 (corrected)
-}
-
-// Correct UEQ scale mapping based on official UEQ
-// Attractiveness: items 1, 12, 14, 16, 24
-// Perspicuity: items 2, 4, 13, 21
-// Efficiency: items 3, 10, 19, 23
-// Dependability: items 4, 8, 9, 11
-// Stimulation: items 5, 6, 7, 18
-// Novelty: items 5, 7, 11, 12
-// Note: Some items belong to multiple scales in the original UEQ
-// Using corrected standard mapping:
-const UEQ_SCALES_CORRECT: Record<string, number[]> = {
-  Attractiveness: [1, 12, 14, 16, 24],
-  Perspicuity: [2, 4, 13, 21],
-  Efficiency: [3, 10, 19, 23],
-  Dependability: [4, 8, 9, 11],
-  Stimulation: [5, 6, 7, 18],
-  Novelty: [5, 7, 11, 12],
-}
-
-// Simplified mapping that distributes items more evenly
-const SCALE_MAPPING: Record<string, number[]> = {
-  Attractiveness: [1, 12, 14, 16, 24],
-  Perspicuity: [2, 4, 13, 21],
-  Efficiency: [3, 10, 19, 23],
-  Dependability: [4, 8, 9, 11],
-  Stimulation: [5, 6, 7, 18],
-  Novelty: [5, 7, 11, 12],
+// UEQ scale mapping (1-indexed) — non-overlapping items with reverse coding info
+// Reverse-coded items use the transformation: 8 - value
+const SCALE_MAPPING: Record<string, { items: number[]; reverse: number[] }> = {
+  Attractiveness: { items: [1, 12, 14, 16], reverse: [16] },
+  Perspicuity:    { items: [2, 4, 8, 19],    reverse: [4] },
+  Efficiency:     { items: [3, 10, 13, 20],  reverse: [20] },
+  Dependability:  { items: [7, 15, 18, 23],  reverse: [] },
+  Stimulation:    { items: [5, 6, 9, 17],    reverse: [] },
+  Novelty:        { items: [11, 21, 22],     reverse: [] },
 }
 
 function calculateUEQScales(answers: number[]): Record<string, number> {
   const results: Record<string, number> = {}
 
-  for (const [scale, itemIndices] of Object.entries(SCALE_MAPPING)) {
-    const values = itemIndices.map((idx) => answers[idx - 1]).filter((v) => v > 0)
+  for (const [scale, { items, reverse }] of Object.entries(SCALE_MAPPING)) {
+    const values = items.map((idx) => {
+      const raw = answers[idx - 1]
+      if (raw <= 0) return null
+      // Apply reverse coding: 8 - value
+      return reverse.includes(idx) ? 8 - raw : raw
+    }).filter((v): v is number => v !== null)
     if (values.length > 0) {
       // UEQ uses -3 to +3 scale (convert 1-7 to -3 to +3)
       const mean = values.reduce((a, b) => a + b, 0) / values.length
-      results[scale] = Math.round((mean - 4) * 100) / 100 // Convert 1-7 to -3 to +3
+      results[scale] = Math.round((mean - 4) * 100) / 100
     } else {
       results[scale] = 0
     }
@@ -195,7 +173,7 @@ export default function UEQFeedbackScreen() {
       if (data.success) {
         toast.success('Evaluasi UEQ berhasil dikirim')
       } else {
-        toast.success('Evaluasi UEQ berhasil dikirim')
+        toast.error('Gagal mengirim evaluasi UEQ')
       }
 
       setSubmitted(true)
@@ -203,7 +181,7 @@ export default function UEQFeedbackScreen() {
       const scales = calculateUEQScales(answers)
       setScaleResults(scales)
       setSubmitted(true)
-      toast.success('Evaluasi UEQ berhasil dikirim')
+      toast.error('Gagal mengirim evaluasi UEQ')
     } finally {
       setIsSubmitting(false)
     }

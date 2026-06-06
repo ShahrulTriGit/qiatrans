@@ -77,7 +77,7 @@ export async function PUT(
       if (body.status === 'ACTIVE') {
         await db.vehicle.update({
           where: { id: existingRental.vehicleId },
-          data: { status: 'DISERWA' },
+          data: { status: 'DISEWA' },
         })
       }
 

@@ -24,7 +24,7 @@ const steps = [
     icon: ScanLine,
     title: 'Deteksi Lecet AI',
     description:
-      'Tecnologi AI canggih untuk mendeteksi lecet dan kerusakan pada kendaraan secara otomatis dengan akurasi tinggi.',
+      'Teknologi AI canggih untuk mendeteksi lecet dan kerusakan pada kendaraan secara otomatis dengan akurasi tinggi.',
     gradient: 'from-qia to-qia-dark',
   },
 ]

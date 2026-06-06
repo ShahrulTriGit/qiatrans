@@ -35,7 +35,8 @@ export default function LoginScreen() {
         toast.error('Login gagal', { description: 'Email atau password salah' })
       } else if (result?.ok) {
         toast.success('Login berhasil!')
-        // Re-fetch session to get role
+        // Wait for session to be updated before fetching
+        await new Promise(r => setTimeout(r, 500))
         const res = await fetch('/api/auth/session')
         const session = await res.json()
         if (session?.user?.role === 'ADMIN') {

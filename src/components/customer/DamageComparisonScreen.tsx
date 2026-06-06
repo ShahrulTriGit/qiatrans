@@ -11,8 +11,6 @@ import { toast } from 'sonner'
 import {
   ArrowLeft,
   ArrowRightLeft,
-  ArrowUp,
-  ArrowDown,
   Minus,
   AlertTriangle,
   CheckCircle2,
@@ -155,6 +153,30 @@ export default function DamageComparisonScreen() {
   const [isLoading, setIsLoading] = useState(true)
   const [isDownloading, setIsDownloading] = useState(false)
 
+  if (!selectedRentalId) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="sticky top-0 z-10 bg-primary text-primary-foreground px-4 py-3 flex items-center gap-3 shadow-md">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-primary-foreground hover:bg-primary/80"
+            onClick={goBack}
+          >
+            <ArrowLeft className="size-5" />
+          </Button>
+          <h1 className="text-lg font-semibold">Perbandingan Kondisi Kendaraan</h1>
+        </div>
+        <div className="p-4 flex flex-col items-center justify-center gap-3 py-20">
+          <Car className="size-12 text-muted-foreground" />
+          <p className="font-semibold text-muted-foreground">Rental tidak dipilih</p>
+          <p className="text-xs text-muted-foreground text-center">Silakan pilih rental terlebih dahulu</p>
+          <Button variant="outline" onClick={goBack}>Kembali</Button>
+        </div>
+      </div>
+    )
+  }
+
   useEffect(() => {
     fetchComparisonData()
   }, [selectedRentalId])
@@ -187,7 +209,6 @@ export default function DamageComparisonScreen() {
             newDetections,
             existingDetections,
           })
-          setIsLoading(false)
           return
         }
       }
@@ -224,10 +245,67 @@ export default function DamageComparisonScreen() {
     }
   }
 
-  const handleDownloadReport = async () => {
+  const handleDownloadReport = () => {
+    if (!comparison) return
     setIsDownloading(true)
     try {
-      await new Promise((r) => setTimeout(r, 1500))
+      const vehicleName = comparison.beforeInspection?.vehicle?.namaMobil || comparison.afterInspection?.vehicle?.namaMobil || 'Kendaraan'
+      const platNomor = comparison.beforeInspection?.vehicle?.platNomor || comparison.afterInspection?.vehicle?.platNomor || '-'
+
+      const lines = [
+        `<html><head><title>Laporan Kerusakan - ${vehicleName}</title>`,
+        `<style>body{font-family:Arial,sans-serif;padding:20px;color:#333}h1{color:#1e40af}table{border-collapse:collapse;width:100%;margin:16px 0}th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#f0f4ff}.badge{padding:2px 8px;border-radius:4px;font-size:12px}.ringan{background:#dcfce7;color:#166534}.sedang{background:#fef9c3;color:#854d0e}.berat{background:#fee2e2;color:#991b1b}hr{border:none;border-top:1px solid #e5e7eb;margin:20px 0}</style>`,
+        `</head><body>`,
+        `<h1>Laporan Perbandingan Kerusakan</h1>`,
+        `<p><strong>Kendaraan:</strong> ${vehicleName} (${platNomor})</p>`,
+        `<p><strong>Tanggal:</strong> ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>`,
+        `<hr/>`,
+        `<h2>Sebelum Rental</h2>`,
+        `<p>Total lecet: ${comparison.beforeDetections.length}</p>`,
+      ]
+
+      if (comparison.beforeDetections.length > 0) {
+        lines.push(`<table><tr><th>Lokasi</th><th>Confidence</th><th>Severity</th></tr>`)
+        comparison.beforeDetections.forEach(d => {
+          lines.push(`<tr><td>${d.lokasiLecet}</td><td>${Math.round(d.confidence * 100)}%</td><td><span class="badge ${d.severity.toLowerCase()}">${d.severity}</span></td></tr>`)
+        })
+        lines.push(`</table>`)
+      }
+
+      lines.push(`<h2>Sesudah Rental</h2>`)
+      lines.push(`<p>Total lecet: ${comparison.afterDetections.length}</p>`)
+
+      if (comparison.afterDetections.length > 0) {
+        lines.push(`<table><tr><th>Lokasi</th><th>Confidence</th><th>Severity</th></tr>`)
+        comparison.afterDetections.forEach(d => {
+          lines.push(`<tr><td>${d.lokasiLecet}</td><td>${Math.round(d.confidence * 100)}%</td><td><span class="badge ${d.severity.toLowerCase()}">${d.severity}</span></td></tr>`)
+        })
+        lines.push(`</table>`)
+      }
+
+      lines.push(`<hr/>`)
+      lines.push(`<h2>Kerusakan Baru</h2>`)
+      lines.push(`<p>Jumlah: ${comparison.newDetections.length}</p>`)
+
+      if (comparison.newDetections.length > 0) {
+        lines.push(`<table><tr><th>Lokasi</th><th>Confidence</th><th>Severity</th></tr>`)
+        comparison.newDetections.forEach(d => {
+          lines.push(`<tr><td>${d.lokasiLecet}</td><td>${Math.round(d.confidence * 100)}%</td><td><span class="badge ${d.severity.toLowerCase()}">${d.severity}</span></td></tr>`)
+        })
+        lines.push(`</table>`)
+      }
+
+      lines.push(`</body></html>`)
+
+      const blob = new Blob([lines.join('')], { type: 'text/html' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `laporan-kerusakan-${vehicleName.replace(/\s+/g, '-').toLowerCase()}.html`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
       toast.success('Laporan berhasil diunduh')
     } catch {
       toast.error('Gagal mengunduh laporan')

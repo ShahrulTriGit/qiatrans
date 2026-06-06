@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useNavStore } from '@/stores/navStore'
 import { useSession } from 'next-auth/react'
-import { toast } from 'sonner'
 import {
   Car,
   CreditCard,
@@ -45,81 +44,75 @@ import {
 } from 'recharts'
 import type { DashboardStats, Rental } from '@/types'
 
-const revenueData = [
-  { day: 'Sen', revenue: 3200000 },
-  { day: 'Sel', revenue: 4500000 },
-  { day: 'Rab', revenue: 3800000 },
-  { day: 'Kam', revenue: 5100000 },
-  { day: 'Jum', revenue: 6200000 },
-  { day: 'Sab', revenue: 7800000 },
-  { day: 'Min', revenue: 5400000 },
-]
-
-const rentalStatusData = [
-  { name: 'Aktif', value: 12, color: 'oklch(0.55 0.17 145)' },
-  { name: 'Pending', value: 5, color: 'oklch(0.55 0.15 230)' },
-  { name: 'Selesai', value: 28, color: 'oklch(0.45 0.15 250)' },
-  { name: 'Dibatalkan', value: 3, color: 'oklch(0.65 0.03 250)' },
-]
-
-const mockStats: DashboardStats = {
-  totalVehicles: 24,
-  activeRentals: 12,
-  totalRevenue: 48500000,
-  totalCustomers: 156,
-  pendingBookings: 5,
-  completedRentals: 28,
-  cancelledRentals: 3,
-  availableVehicles: 18,
+const emptyStats: DashboardStats = {
+  totalVehicles: 0,
+  activeRentals: 0,
+  totalRevenue: 0,
+  totalCustomers: 0,
+  pendingBookings: 0,
+  completedRentals: 0,
+  cancelledRentals: 0,
+  availableVehicles: 0,
 }
 
-const mockRentals: Partial<Rental>[] = [
-  {
-    id: '1',
-    tanggalSewa: '2026-03-01',
-    tanggalKembali: '2026-03-05',
-    status: 'ACTIVE',
-    totalHarga: 2400000,
-    user: { nama: 'Budi Santoso' },
-    vehicle: { namaMobil: 'Toyota Avanza' },
-  },
-  {
-    id: '2',
-    tanggalSewa: '2026-03-02',
-    tanggalKembali: '2026-03-04',
-    status: 'PENDING',
-    totalHarga: 1800000,
-    user: { nama: 'Siti Aminah' },
-    vehicle: { namaMobil: 'Honda Jazz' },
-  },
-  {
-    id: '3',
-    tanggalSewa: '2026-02-28',
-    tanggalKembali: '2026-03-03',
-    status: 'COMPLETED',
-    totalHarga: 3200000,
-    user: { nama: 'Ahmad Fauzi' },
-    vehicle: { namaMobil: 'Mitsubishi Xpander' },
-  },
-  {
-    id: '4',
-    tanggalSewa: '2026-03-01',
-    tanggalKembali: '2026-03-07',
-    status: 'ACTIVE',
-    totalHarga: 5600000,
-    user: { nama: 'Dewi Lestari' },
-    vehicle: { namaMobil: 'Toyota Fortuner' },
-  },
-  {
-    id: '5',
-    tanggalSewa: '2026-02-25',
-    tanggalKembali: '2026-02-28',
-    status: 'CANCELLED',
-    totalHarga: 1500000,
-    user: { nama: 'Rudi Hartono' },
-    vehicle: { namaMobil: 'Suzuki Ertiga' },
-  },
+interface RevenueEntry {
+  month: string
+  revenue: number
+}
+
+interface StatusEntry {
+  name: string
+  value: number
+  color: string
+}
+
+const defaultRevenueData: RevenueEntry[] = []
+
+const defaultRentalStatusData: StatusEntry[] = [
+  { name: 'Aktif', value: 0, color: 'oklch(0.55 0.17 145)' },
+  { name: 'Pending', value: 0, color: 'oklch(0.55 0.15 230)' },
+  { name: 'Selesai', value: 0, color: 'oklch(0.45 0.15 250)' },
+  { name: 'Dibatalkan', value: 0, color: 'oklch(0.65 0.03 250)' },
 ]
+
+/** Build last-6-months revenue from rentals with COMPLETED or ACTIVE status */
+function computeRevenueData(rentals: Rental[]): RevenueEntry[] {
+  const now = new Date()
+  const months: { key: string; label: string }[] = []
+
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const label = d.toLocaleDateString('id-ID', { month: 'short' })
+    months.push({ key, label })
+  }
+
+  const revenueByMonth: Record<string, number> = {}
+  for (const m of months) {
+    revenueByMonth[m.key] = 0
+  }
+
+  for (const rental of rentals) {
+    if (rental.status === 'COMPLETED' || rental.status === 'ACTIVE') {
+      const date = new Date(rental.tanggalSewa)
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+      if (key in revenueByMonth) {
+        revenueByMonth[key] += rental.totalHarga
+      }
+    }
+  }
+
+  return months.map((m) => ({ month: m.label, revenue: revenueByMonth[m.key] }))
+}
+
+function computeRentalStatusData(stats: DashboardStats): StatusEntry[] {
+  return [
+    { name: 'Aktif', value: stats.activeRentals, color: 'oklch(0.55 0.17 145)' },
+    { name: 'Pending', value: stats.pendingBookings, color: 'oklch(0.55 0.15 230)' },
+    { name: 'Selesai', value: stats.completedRentals, color: 'oklch(0.45 0.15 250)' },
+    { name: 'Dibatalkan', value: stats.cancelledRentals, color: 'oklch(0.65 0.03 250)' },
+  ]
+}
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount)
@@ -142,25 +135,45 @@ function getStatusVariant(status: string) {
 export default function DashboardScreen() {
   const { setAdminPage } = useNavStore()
   const { data: session } = useSession()
-  const [stats, setStats] = useState<DashboardStats>(mockStats)
-  const [recentRentals, setRecentRentals] = useState<Partial<Rental>[]>(mockRentals)
+  const [stats, setStats] = useState<DashboardStats>(emptyStats)
+  const [recentRentals, setRecentRentals] = useState<Rental[]>([])
+  const [revenueData, setRevenueData] = useState<RevenueEntry[]>(defaultRevenueData)
+  const [rentalStatusData, setRentalStatusData] = useState<StatusEntry[]>(defaultRentalStatusData)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchStats()
+    fetchDashboardData()
   }, [])
 
-  async function fetchStats() {
+  async function fetchDashboardData() {
     try {
-      const res = await fetch('/api/stats')
-      if (res.ok) {
-        const data = await res.json()
-        if (data.data) {
-          setStats(data.data)
+      const [statsRes, rentalsRes] = await Promise.all([
+        fetch('/api/stats'),
+        fetch('/api/rentals'),
+      ])
+
+      let fetchedStats: DashboardStats | null = null
+      let fetchedRentals: Rental[] = []
+
+      if (statsRes.ok) {
+        const statsJson = await statsRes.json()
+        if (statsJson.data) {
+          fetchedStats = statsJson.data
+          setStats(fetchedStats!)
+          setRentalStatusData(computeRentalStatusData(fetchedStats!))
+        }
+      }
+
+      if (rentalsRes.ok) {
+        const rentalsJson = await rentalsRes.json()
+        if (rentalsJson.data) {
+          fetchedRentals = rentalsJson.data as Rental[]
+          setRecentRentals(fetchedRentals.slice(0, 5))
+          setRevenueData(computeRevenueData(fetchedRentals))
         }
       }
     } catch {
-      // Use mock data
+      // Keep empty defaults
     } finally {
       setLoading(false)
     }
@@ -212,7 +225,7 @@ export default function DashboardScreen() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Dashboard QiaTrans</h1>
           <p className="text-muted-foreground mt-1">
-            Selamat datang, {session?.user?.name || 'Admin'}
+            Selamat datang, {session?.user?.nama || 'Admin'}
           </p>
         </div>
         <div className="flex gap-2">
@@ -262,15 +275,15 @@ export default function DashboardScreen() {
         {/* Revenue Chart */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-lg">Pendapatan 7 Hari Terakhir</CardTitle>
-            <CardDescription>Tren pendapatan harian</CardDescription>
+            <CardTitle className="text-lg">Pendapatan 6 Bulan Terakhir</CardTitle>
+            <CardDescription>Tren pendapatan bulanan</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={revenueData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="day" className="text-xs" tick={{ fill: 'var(--muted-foreground)' }} />
+                  <XAxis dataKey="month" className="text-xs" tick={{ fill: 'var(--muted-foreground)' }} />
                   <YAxis className="text-xs" tick={{ fill: 'var(--muted-foreground)' }} tickFormatter={(v) => `${(v / 1000000).toFixed(0)}jt`} />
                   <Tooltip
                     formatter={(value: number) => [formatCurrency(value), 'Pendapatan']}
@@ -369,15 +382,15 @@ export default function DashboardScreen() {
                   <TableRow
                     key={rental.id}
                     className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => setAdminPage('rental-detail', { rentalId: rental.id! })}
+                    onClick={() => setAdminPage('rental-detail', { rentalId: rental.id })}
                   >
                     <TableCell className="font-medium">{rental.user?.nama || '-'}</TableCell>
                     <TableCell>{rental.vehicle?.namaMobil || '-'}</TableCell>
-                    <TableCell>{formatDate(rental.tanggalSewa!)}</TableCell>
+                    <TableCell>{rental.tanggalSewa ? formatDate(rental.tanggalSewa) : '-'}</TableCell>
                     <TableCell>
-                      <Badge variant={getStatusVariant(rental.status!)}>{rental.status}</Badge>
+                      <Badge variant={getStatusVariant(rental.status ?? 'PENDING')}>{rental.status ?? '-'}</Badge>
                     </TableCell>
-                    <TableCell className="text-right">{formatCurrency(rental.totalHarga!)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(rental.totalHarga ?? 0)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

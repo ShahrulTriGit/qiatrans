@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { Search, Users, ShieldCheck, ShieldX, Mail, Phone } from 'lucide-react'
+import { Search, Users, ShieldCheck, ShieldX, Mail, Phone, Loader2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,12 +16,25 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import type { User } from '@/types'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import type { User, Rental } from '@/types'
 
 export default function CustomerManagementScreen() {
   const [customers, setCustomers] = useState<User[]>([])
+  const [rentalCounts, setRentalCounts] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [verifyTarget, setVerifyTarget] = useState<User | null>(null)
+  const [toggling, setToggling] = useState(false)
 
   useEffect(() => {
     fetchCustomers()
@@ -29,15 +42,60 @@ export default function CustomerManagementScreen() {
 
   async function fetchCustomers() {
     try {
-      const res = await fetch('/api/users?role=CUSTOMER')
-      if (res.ok) {
-        const data = await res.json()
+      const [custRes, rentalRes] = await Promise.all([
+        fetch('/api/users?role=CUSTOMER'),
+        fetch('/api/rentals'),
+      ])
+
+      if (custRes.ok) {
+        const data = await custRes.json()
         setCustomers(data.data || [])
+      }
+
+      if (rentalRes.ok) {
+        const rentalData = await rentalRes.json()
+        const rentals: Rental[] = rentalData.data || []
+        const counts: Record<string, number> = {}
+        for (const r of rentals) {
+          counts[r.userId] = (counts[r.userId] || 0) + 1
+        }
+        setRentalCounts(counts)
       }
     } catch {
       toast.error('Gagal memuat data customer')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleToggleVerify() {
+    if (!verifyTarget) return
+    setToggling(true)
+    try {
+      const res = await fetch('/api/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: verifyTarget.id, verified: !verifyTarget.verified }),
+      })
+      if (res.ok) {
+        setCustomers((prev) =>
+          prev.map((c) =>
+            c.id === verifyTarget.id ? { ...c, verified: !c.verified } : c
+          )
+        )
+        toast.success(
+          verifyTarget.verified
+            ? `${verifyTarget.nama} berhasil di-unverify`
+            : `${verifyTarget.nama} berhasil diverifikasi`
+        )
+      } else {
+        toast.error('Gagal mengubah status verifikasi')
+      }
+    } catch {
+      toast.error('Gagal mengubah status verifikasi')
+    } finally {
+      setToggling(false)
+      setVerifyTarget(null)
     }
   }
 
@@ -104,12 +162,13 @@ export default function CustomerManagementScreen() {
                     <TableHead>No. Telepon</TableHead>
                     <TableHead>Verified</TableHead>
                     <TableHead className="text-right">Jumlah Rental</TableHead>
+                    <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredCustomers.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                         Tidak ada customer ditemukan
                       </TableCell>
                     </TableRow>
@@ -149,7 +208,22 @@ export default function CustomerManagementScreen() {
                             </Badge>
                           )}
                         </TableCell>
-                        <TableCell className="text-right">-</TableCell>
+                        <TableCell className="text-right font-medium">
+                          {rentalCounts[customer.id] ?? 0}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            size="sm"
+                            variant={customer.verified ? 'outline' : 'default'}
+                            onClick={() => setVerifyTarget(customer)}
+                          >
+                            {customer.verified ? (
+                              <><ShieldX className="w-3.5 h-3.5 mr-1" /> Unverify</>
+                            ) : (
+                              <><ShieldCheck className="w-3.5 h-3.5 mr-1" /> Verify</>
+                            )}
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))
                   )}
@@ -199,6 +273,22 @@ export default function CustomerManagementScreen() {
                         <Phone className="w-3 h-3" /> {customer.noTelepon}
                       </p>
                     )}
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-xs text-muted-foreground">
+                        Jumlah Rental: <span className="font-medium text-foreground">{rentalCounts[customer.id] ?? 0}</span>
+                      </span>
+                      <Button
+                        size="sm"
+                        variant={customer.verified ? 'outline' : 'default'}
+                        onClick={() => setVerifyTarget(customer)}
+                      >
+                        {customer.verified ? (
+                          <><ShieldX className="w-3.5 h-3.5 mr-1" /> Unverify</>
+                        ) : (
+                          <><ShieldCheck className="w-3.5 h-3.5 mr-1" /> Verify</>
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -206,6 +296,29 @@ export default function CustomerManagementScreen() {
           ))
         )}
       </div>
+
+      {/* Verify/Unverify Confirmation Dialog */}
+      <AlertDialog open={!!verifyTarget} onOpenChange={(open) => { if (!open) setVerifyTarget(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {verifyTarget?.verified ? 'Unverify Customer' : 'Verify Customer'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {verifyTarget?.verified
+                ? `Apakah Anda yakin ingin menghapus status verifikasi dari ${verifyTarget?.nama}? Customer ini tidak akan bisa melakukan rental hingga diverifikasi kembali.`
+                : `Apakah Anda yakin ingin memverifikasi ${verifyTarget?.nama}? Customer ini akan dapat melakukan rental setelah diverifikasi.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={toggling}>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleToggleVerify} disabled={toggling}>
+              {toggling && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {verifyTarget?.verified ? 'Unverify' : 'Verify'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

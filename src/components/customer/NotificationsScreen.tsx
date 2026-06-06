@@ -17,7 +17,6 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  Trash2,
 } from 'lucide-react'
 import type { Notification, NotificationType } from '@/types'
 

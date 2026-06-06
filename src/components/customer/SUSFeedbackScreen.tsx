@@ -117,7 +117,7 @@ export default function SUSFeedbackScreen() {
       if (data.success) {
         toast.success('Evaluasi SUS berhasil dikirim')
       } else {
-        toast.success('Evaluasi SUS berhasil dikirim')
+        toast.error('Gagal mengirim evaluasi SUS')
       }
 
       setSubmitted(true)
@@ -126,7 +126,7 @@ export default function SUSFeedbackScreen() {
       const score = calculateSUSScore(answers)
       setSusScore(score)
       setSubmitted(true)
-      toast.success('Evaluasi SUS berhasil dikirim')
+      toast.error('Gagal mengirim evaluasi SUS')
     } finally {
       setIsSubmitting(false)
     }

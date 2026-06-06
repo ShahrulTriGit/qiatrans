@@ -5,11 +5,19 @@ import { db } from '@/lib/db'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { nama, email, password, role } = body
+    const { nama, email, password, role, noTelepon } = body
 
     if (!nama || !email || !password) {
       return NextResponse.json(
         { success: false, error: 'Nama, email, dan password harus diisi' },
+        { status: 400 }
+      )
+    }
+
+    // Validate noTelepon if provided
+    if (noTelepon !== undefined && noTelepon !== null && typeof noTelepon !== 'string') {
+      return NextResponse.json(
+        { success: false, error: 'noTelepon harus berupa string' },
         { status: 400 }
       )
     }
@@ -36,6 +44,7 @@ export async function POST(request: NextRequest) {
         email,
         password: hashedPassword,
         role: role || 'CUSTOMER',
+        ...(noTelepon ? { noTelepon } : {}),
       },
     })
 

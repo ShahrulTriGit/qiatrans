@@ -47,7 +47,7 @@ const MOCK_INSPECTIONS: Inspection[] = [
       transmisi: 'Automatic',
       bahanBakar: 'Bensin',
       kapasitas: 7,
-      status: 'DISERWA',
+      status: 'DISEWA',
       foto: '',
       deskripsi: '',
       createdAt: '2024-01-01T00:00:00.000Z',
@@ -143,7 +143,7 @@ const MOCK_INSPECTIONS: Inspection[] = [
       transmisi: 'Automatic',
       bahanBakar: 'Bensin',
       kapasitas: 5,
-      status: 'DISERWA',
+      status: 'DISEWA',
       foto: '',
       deskripsi: '',
       createdAt: '2024-01-01T00:00:00.000Z',
@@ -162,13 +162,17 @@ export default function InspectionHistoryScreen() {
   const [activeTab, setActiveTab] = useState('all')
 
   useEffect(() => {
-    fetchInspections()
-  }, [])
+    if (session?.user?.id) {
+      fetchInspections()
+    } else {
+      setIsLoading(false)
+    }
+  }, [session?.user?.id])
 
   const fetchInspections = async () => {
     setIsLoading(true)
     try {
-      const res = await fetch('/api/inspections')
+      const res = await fetch(`/api/inspections?userId=${session?.user?.id}`)
       const data = await res.json()
 
       if (data.success && data.data && Array.isArray(data.data) && data.data.length > 0) {

@@ -3,10 +3,6 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import {
-  Radar as RadarIcon,
-  Target,
-} from 'lucide-react'
-import {
   Card,
   CardContent,
   CardHeader,
@@ -46,13 +42,6 @@ function getScoreColor(score: number) {
   if (score >= 0.8) return 'text-info'
   if (score >= 0.0) return 'text-warning'
   return 'text-destructive'
-}
-
-function getScoreBg(score: number) {
-  if (score >= 1.5) return 'bg-success/10'
-  if (score >= 0.8) return 'bg-info/10'
-  if (score >= 0.0) return 'bg-warning/10'
-  return 'bg-destructive/10'
 }
 
 function getScoreLabel(score: number) {

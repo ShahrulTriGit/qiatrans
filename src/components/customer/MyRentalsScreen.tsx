@@ -69,7 +69,13 @@ export default function MyRentalsScreen() {
       <Card
         className="border-0 shadow-md rounded-2xl cursor-pointer hover:shadow-lg transition-shadow"
         onClick={() => {
-          setCustomerPage('rental-history')
+          if (rental.status === 'PENDING') {
+            setCustomerPage('my-rentals', { rentalId: rental.id })
+          } else if (rental.status === 'ACTIVE') {
+            setCustomerPage('inspection-before', { rentalId: rental.id })
+          } else if (rental.status === 'COMPLETED') {
+            setCustomerPage('rental-history', { rentalId: rental.id })
+          }
         }}
       >
         <CardContent className="p-4">
@@ -97,11 +103,11 @@ export default function MyRentalsScreen() {
 
           {/* Action Buttons */}
           {rental.status === 'ACTIVE' && (
-            <div className="mt-3 pt-3 border-t">
+            <div className="mt-3 pt-3 border-t flex gap-2">
               <Button
                 size="sm"
                 variant="outline"
-                className="w-full rounded-xl text-xs"
+                className="flex-1 rounded-xl text-xs"
                 onClick={(e) => {
                   e.stopPropagation()
                   setCustomerPage('inspection-before', { rentalId: rental.id })
@@ -109,6 +115,18 @@ export default function MyRentalsScreen() {
               >
                 <ClipboardCheck className="w-3.5 h-3.5 mr-1.5" />
                 Inspeksi Sebelum Rental
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex-1 rounded-xl text-xs"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setCustomerPage('inspection-after', { rentalId: rental.id })
+                }}
+              >
+                <ClipboardCheck className="w-3.5 h-3.5 mr-1.5" />
+                Inspeksi Setelah Rental
               </Button>
             </div>
           )}

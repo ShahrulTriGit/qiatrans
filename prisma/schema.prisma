@@ -43,7 +43,7 @@ model Vehicle {
   transmisi     String   // Manual | Automatic
   bahanBakar    String   // Bensin | Diesel | Hybrid | Listrik
   kapasitas     Int
-  status        String   @default("TERSEDIA") // TERSEDIA | DISERWA | MAINTENANCE
+  status        String   @default("TERSEDIA") // TERSEDIA | DISEWA | MAINTENANCE
   foto          String
   deskripsi     String
   createdAt     DateTime @default(now())

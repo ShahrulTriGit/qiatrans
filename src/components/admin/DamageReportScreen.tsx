@@ -3,8 +3,6 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import {
-  FileWarning,
-  ArrowLeftRight,
   Car,
 } from 'lucide-react'
 import {
@@ -33,6 +31,7 @@ import {
 import {
   BarChart,
   Bar,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -202,7 +201,7 @@ export default function DamageReportScreen() {
                 />
                 <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                   {severityChartData.map((entry, index) => (
-                    <rect key={index} fill={entry.fill} />
+                    <Cell key={index} fill={entry.fill} />
                   ))}
                 </Bar>
               </BarChart>

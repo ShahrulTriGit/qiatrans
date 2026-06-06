@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   ArrowLeft,
   User,
@@ -37,12 +37,66 @@ export default function ProfileScreen() {
     email: session?.user?.email || '',
     noTelepon: '',
     alamat: '',
+    noKTP: '',
+    noSIM: '',
   })
 
-  const handleSave = () => {
-    // Simulate save
-    setEditMode(false)
-    toast.success('Profil berhasil diperbarui')
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        const res = await fetch('/api/user')
+        if (res.ok) {
+          const data = await res.json()
+          if (data) {
+            setForm((prev) => ({
+              ...prev,
+              nama: data.nama || prev.nama,
+              email: data.email || prev.email,
+              noTelepon: data.noTelepon || '',
+              alamat: data.alamat || '',
+              noKTP: data.noKTP || '',
+              noSIM: data.noSIM || '',
+            }))
+          }
+        }
+      } catch {
+        // silently fail — form keeps session defaults
+      }
+    }
+    fetchUser()
+  }, [])
+
+  const handleSave = async () => {
+    try {
+      const res = await fetch('/api/user', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nama: form.nama,
+          noTelepon: form.noTelepon,
+          alamat: form.alamat,
+          noKTP: form.noKTP,
+          noSIM: form.noSIM,
+        }),
+      })
+      const data = await res.json()
+      if (res.ok && data.success !== false) {
+        setForm((prev) => ({
+          ...prev,
+          nama: data.nama || prev.nama,
+          noTelepon: data.noTelepon ?? prev.noTelepon,
+          alamat: data.alamat ?? prev.alamat,
+          noKTP: data.noKTP ?? prev.noKTP,
+          noSIM: data.noSIM ?? prev.noSIM,
+        }))
+        setEditMode(false)
+        toast.success('Profil berhasil diperbarui')
+      } else {
+        toast.error(data.message || 'Gagal memperbarui profil')
+      }
+    } catch {
+      toast.error('Gagal memperbarui profil')
+    }
   }
 
   const handleLogout = async () => {

@@ -84,10 +84,10 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Update vehicle status to DISERWA
+    // Update vehicle status to DISEWA
     await db.vehicle.update({
       where: { id: vehicleId },
-      data: { status: 'DISERWA' },
+      data: { status: 'DISEWA' },
     })
 
     return NextResponse.json(

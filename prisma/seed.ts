@@ -125,7 +125,7 @@ async function main() {
         transmisi: 'Manual',
         bahanBakar: 'Bensin',
         kapasitas: 7,
-        status: 'DISERWA',
+        status: 'DISEWA',
         foto: '/uploads/avanza.jpg',
         deskripsi: 'Toyota Avanza G 2022, MPV keluarga yang ekonomis dan luas. Pilihan tepat untuk perjalanan bersama keluarga.',
       },

@@ -33,7 +33,7 @@ export interface Vehicle {
   transmisi: 'Manual' | 'Automatic';
   bahanBakar: 'Bensin' | 'Diesel' | 'Hybrid' | 'Listrik';
   kapasitas: number;
-  status: 'TERSEDIA' | 'DISERWA' | 'MAINTENANCE';
+  status: 'TERSEDIA' | 'DISEWA' | 'MAINTENANCE';
   foto: string;
   deskripsi: string;
   createdAt: string;

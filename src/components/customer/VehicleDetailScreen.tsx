@@ -23,7 +23,7 @@ const formatPrice = (price: number) =>
 
 const statusMap: Record<string, { label: string; className: string }> = {
   TERSEDIA: { label: 'Tersedia', className: 'bg-success/10 text-success' },
-  DISERWA: { label: 'Disewa', className: 'bg-warning/10 text-warning' },
+  DISEWA: { label: 'Disewa', className: 'bg-warning/10 text-warning' },
   MAINTENANCE: { label: 'Maintenance', className: 'bg-destructive/10 text-destructive' },
 }
 

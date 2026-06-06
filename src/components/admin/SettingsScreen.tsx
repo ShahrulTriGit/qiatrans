@@ -1,10 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
 import {
-  Settings,
   Moon,
   Sun,
   User,
@@ -30,7 +29,7 @@ export default function SettingsScreen() {
   const { data: session } = useSession()
   const { theme, setTheme } = useTheme()
   const [profileForm, setProfileForm] = useState({
-    nama: session?.user?.name || '',
+    nama: session?.user?.nama || '',
     email: session?.user?.email || '',
     noTelepon: '',
     alamat: '',
@@ -43,10 +42,30 @@ export default function SettingsScreen() {
   const [savingProfile, setSavingProfile] = useState(false)
   const [savingPassword, setSavingPassword] = useState(false)
 
+  useEffect(() => {
+    async function fetchProfile() {
+      try {
+        const res = await fetch('/api/user')
+        if (!res.ok) return
+        const data = await res.json()
+        setProfileForm(prev => ({
+          ...prev,
+          nama: data.nama || prev.nama,
+          email: data.email || prev.email,
+          noTelepon: data.noTelepon || '',
+          alamat: data.alamat || '',
+        }))
+      } catch {
+        // silently ignore, form stays with defaults
+      }
+    }
+    fetchProfile()
+  }, [])
+
   async function handleSaveProfile() {
     setSavingProfile(true)
     try {
-      const res = await fetch('/api/user/profile', {
+      const res = await fetch('/api/user', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(profileForm),
@@ -71,8 +90,8 @@ export default function SettingsScreen() {
     }
     setSavingPassword(true)
     try {
-      const res = await fetch('/api/user/password', {
-        method: 'PUT',
+      const res = await fetch('/api/user', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           currentPassword: passwordForm.currentPassword,

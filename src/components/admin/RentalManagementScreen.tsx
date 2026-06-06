@@ -5,7 +5,6 @@ import { useNavStore } from '@/stores/navStore'
 import { toast } from 'sonner'
 import {
   Search,
-  CalendarCheck,
   CheckCircle2,
   XCircle,
   Clock,
