@@ -282,8 +282,8 @@ export default function BookingScreen() {
         </Card>
       </div>
 
-      {/* Floating Confirm Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-5 bg-background/95 backdrop-blur-sm border-t z-20">
+      {/* Confirm Button */}
+      <div className="px-5 pb-4">
         <Button
           onClick={handleSubmit}
           disabled={submitting || days === 0 || !selectedVehicleId || (vehicle !== null && vehicle.status !== 'TERSEDIA')}
