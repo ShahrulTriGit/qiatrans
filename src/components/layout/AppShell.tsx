@@ -35,6 +35,7 @@ import DashboardScreen from '@/components/admin/DashboardScreen'
 import VehicleManagementScreen from '@/components/admin/VehicleManagementScreen'
 import CustomerManagementScreen from '@/components/admin/CustomerManagementScreen'
 import RentalManagementScreen from '@/components/admin/RentalManagementScreen'
+import RentalDetailScreen from '@/components/admin/RentalDetailScreen'
 import InspectionDataScreen from '@/components/admin/InspectionDataScreen'
 import DetectionDataScreen from '@/components/admin/DetectionDataScreen'
 import DamageVerificationScreen from '@/components/admin/DamageVerificationScreen'
@@ -115,8 +116,9 @@ function AdminRouter() {
     case 'customers':
       return <CustomerManagementScreen />
     case 'rentals':
-    case 'rental-detail':
       return <RentalManagementScreen />
+    case 'rental-detail':
+      return <RentalDetailScreen />
     case 'inspections':
       return <InspectionDataScreen />
     case 'detections':
