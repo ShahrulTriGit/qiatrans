@@ -225,14 +225,15 @@ export default function DamageReportScreen() {
           <CardDescription>Sebelum vs sesudah rental</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Kendaraan</TableHead>
-                  <TableHead>Tgl Inspeksi Sebelum</TableHead>
+                  <TableHead>Sebelum</TableHead>
                   <TableHead className="text-center">Deteksi Sebelum</TableHead>
-                  <TableHead>Tgl Inspeksi Sesudah</TableHead>
+                  <TableHead>Sesudah</TableHead>
                   <TableHead className="text-center">Deteksi Sesudah</TableHead>
                   <TableHead className="text-center">Kerusakan Baru</TableHead>
                 </TableRow>
@@ -269,6 +270,42 @@ export default function DamageReportScreen() {
                 )}
               </TableBody>
             </Table>
+          </div>
+          {/* Mobile cards */}
+          <div className="md:hidden space-y-3">
+            {comparisons.length === 0 ? (
+              <p className="text-center py-8 text-muted-foreground">Tidak ada data perbandingan</p>
+            ) : (
+              comparisons.map((comp) => (
+                <div key={comp.rentalId} className="p-4 border border-border rounded-lg">
+                  <p className="font-medium text-sm mb-2">{comp.vehicleName}</p>
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div className="p-2 rounded bg-muted/30">
+                      <p className="text-muted-foreground mb-1">Inspeksi Sebelum</p>
+                      <p className="font-semibold">{comp.beforeDate ? formatDate(comp.beforeDate) : '-'}</p>
+                      <p className="text-muted-foreground">Deteksi: {comp.beforeCount}</p>
+                    </div>
+                    <div className="p-2 rounded bg-muted/30">
+                      <p className="text-muted-foreground mb-1">Inspeksi Sesudah</p>
+                      <p className="font-semibold">{comp.afterDate ? formatDate(comp.afterDate) : '-'}</p>
+                      <p className="text-muted-foreground">Deteksi: {comp.afterCount}</p>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex justify-end">
+                    <Badge
+                      variant="outline"
+                      className={
+                        comp.newDamages > 0
+                          ? 'bg-destructive/10 text-destructive border-destructive/20'
+                          : 'bg-success/10 text-success border-success/20'
+                      }
+                    >
+                      Kerusakan Baru: {comp.newDamages > 0 ? `+${comp.newDamages}` : '0'}
+                    </Badge>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

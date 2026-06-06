@@ -204,7 +204,8 @@ export default function SUSReportScreen() {
           <CardDescription>Detail skor setiap responden</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto max-h-96 overflow-y-auto">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto max-h-96 overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -250,6 +251,35 @@ export default function SUSReportScreen() {
                 )}
               </TableBody>
             </Table>
+          </div>
+          {/* Mobile cards */}
+          <div className="md:hidden space-y-3 max-h-96 overflow-y-auto">
+            {results.length === 0 ? (
+              <p className="text-center py-8 text-muted-foreground">Tidak ada data SUS</p>
+            ) : (
+              results.map((result) => {
+                const interp = getScoreInterpretation(result.skor)
+                return (
+                  <div key={result.id} className="p-4 border border-border rounded-lg">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="font-medium text-sm">{result.user?.nama || `User ${result.userId.slice(0, 6)}`}</p>
+                        <p className="text-xs text-muted-foreground font-mono">ID: {result.rentalId.slice(0, 8)}...</p>
+                      </div>
+                      <Badge className={`${interp.bg} ${interp.color}`} variant="outline">{interp.label}</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div className="text-xs text-muted-foreground">
+                        <span>Q1-Q5: {result.q1},{result.q2},{result.q3},{result.q4},{result.q5}</span>
+                        <br />
+                        <span>Q6-Q10: {result.q6},{result.q7},{result.q8},{result.q9},{result.q10}</span>
+                      </div>
+                      <span className="text-lg font-bold">{result.skor.toFixed(1)}</span>
+                    </div>
+                  </div>
+                )
+              })
+            )}
           </div>
         </CardContent>
       </Card>

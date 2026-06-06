@@ -366,7 +366,8 @@ export default function DashboardScreen() {
           </Button>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -395,6 +396,32 @@ export default function DashboardScreen() {
                 ))}
               </TableBody>
             </Table>
+          </div>
+          {/* Mobile cards */}
+          <div className="md:hidden space-y-3">
+            {recentRentals.length === 0 ? (
+              <p className="text-center py-8 text-muted-foreground">Tidak ada rental terbaru</p>
+            ) : (
+              recentRentals.map((rental) => (
+                <div
+                  key={rental.id}
+                  className="p-4 border border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => setAdminPage('rental-detail', { rentalId: rental.id })}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium text-sm">{rental.user?.nama || '-'}</p>
+                      <p className="text-xs text-muted-foreground">{rental.vehicle?.namaMobil || '-'}</p>
+                    </div>
+                    <Badge variant={getStatusVariant(rental.status ?? 'PENDING')}>{rental.status ?? '-'}</Badge>
+                  </div>
+                  <div className="flex justify-between items-center mt-2">
+                    <p className="text-xs text-muted-foreground">{rental.tanggalSewa ? formatDate(rental.tanggalSewa) : '-'}</p>
+                    <p className="text-sm font-semibold">{formatCurrency(rental.totalHarga ?? 0)}</p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

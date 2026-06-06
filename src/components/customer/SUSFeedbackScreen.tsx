@@ -59,10 +59,10 @@ function calculateSUSScore(answers: number[]): number {
 }
 
 function getScoreInterpretion(score: number): { label: string; color: string; description: string } {
-  if (score > 80) return { label: 'Excellent', color: 'text-green-600', description: 'Sistem sangat baik dan mudah digunakan' }
-  if (score >= 68) return { label: 'Good', color: 'text-blue-600', description: 'Sistem baik dan cukup mudah digunakan' }
-  if (score >= 50) return { label: 'OK', color: 'text-yellow-600', description: 'Sistem cukup baik namun masih bisa ditingkatkan' }
-  return { label: 'Poor', color: 'text-red-600', description: 'Sistem perlu perbaikan signifikan' }
+  if (score > 80) return { label: 'Excellent', color: 'text-success', description: 'Sistem sangat baik dan mudah digunakan' }
+  if (score >= 68) return { label: 'Good', color: 'text-info', description: 'Sistem baik dan cukup mudah digunakan' }
+  if (score >= 50) return { label: 'OK', color: 'text-warning', description: 'Sistem cukup baik namun masih bisa ditingkatkan' }
+  return { label: 'Poor', color: 'text-destructive', description: 'Sistem perlu perbaikan signifikan' }
 }
 
 export default function SUSFeedbackScreen() {
@@ -135,7 +135,7 @@ export default function SUSFeedbackScreen() {
   const interpretation = susScore !== null ? getScoreInterpretion(susScore) : null
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-primary text-primary-foreground px-4 py-3 flex items-center gap-3 shadow-md">
         <Button
@@ -195,7 +195,7 @@ export default function SUSFeedbackScreen() {
               </div>
 
               <Badge
-                className={`text-sm px-4 py-1 ${interpretation.color} bg-opacity-10`}
+                className={`text-sm px-4 py-1 ${interpretation.color.replace('text-', 'bg-')}/10 ${interpretation.color}`}
                 variant="outline"
               >
                 {interpretation.label}
@@ -206,22 +206,22 @@ export default function SUSFeedbackScreen() {
               <Separator />
 
               <div className="grid grid-cols-4 gap-2 text-center">
-                <div className="p-2 rounded-lg bg-red-50 border border-red-100">
-                  <p className="text-[10px] text-red-500">Poor</p>
-                  <p className="text-xs font-bold text-red-700">&lt;50</p>
-                </div>
-                <div className="p-2 rounded-lg bg-yellow-50 border border-yellow-100">
-                  <p className="text-[10px] text-yellow-500">OK</p>
-                  <p className="text-xs font-bold text-yellow-700">50-67</p>
-                </div>
-                <div className="p-2 rounded-lg bg-blue-50 border border-blue-100">
-                  <p className="text-[10px] text-blue-500">Good</p>
-                  <p className="text-xs font-bold text-blue-700">68-80</p>
-                </div>
-                <div className="p-2 rounded-lg bg-green-50 border border-green-100">
-                  <p className="text-[10px] text-green-500">Excellent</p>
-                  <p className="text-xs font-bold text-green-700">&gt;80</p>
-                </div>
+                  <div className="p-2 rounded-lg bg-destructive/10 border border-destructive/20">
+                    <p className="text-[10px] text-destructive">Poor</p>
+                    <p className="text-xs font-bold text-destructive">&lt;50</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-warning/10 border border-warning/20">
+                    <p className="text-[10px] text-warning">OK</p>
+                    <p className="text-xs font-bold text-warning">50-67</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-info/10 border border-info/20">
+                    <p className="text-[10px] text-info">Good</p>
+                    <p className="text-xs font-bold text-info">68-80</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-success/10 border border-success/20">
+                    <p className="text-[10px] text-success">Excellent</p>
+                    <p className="text-xs font-bold text-success">&gt;80</p>
+                  </div>
               </div>
 
               <Button className="w-full mt-4" onClick={goBack}>

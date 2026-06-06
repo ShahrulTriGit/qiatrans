@@ -262,7 +262,8 @@ export default function RentalReportScreen() {
           <CardDescription>{filteredRentals.length} data rental</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto max-h-96 overflow-y-auto">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto max-h-96 overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -295,6 +296,28 @@ export default function RentalReportScreen() {
                 )}
               </TableBody>
             </Table>
+          </div>
+          {/* Mobile cards */}
+          <div className="md:hidden space-y-3 max-h-96 overflow-y-auto">
+            {filteredRentals.length === 0 ? (
+              <p className="text-center py-8 text-muted-foreground">Tidak ada data rental</p>
+            ) : (
+              filteredRentals.map((rental) => (
+                <div key={rental.id} className="p-4 border border-border rounded-lg">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="font-medium text-sm">{rental.user?.nama || '-'}</p>
+                      <p className="text-xs text-muted-foreground">{rental.vehicle?.namaMobil || '-'}</p>
+                    </div>
+                    {getStatusBadge(rental.status)}
+                  </div>
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>{formatDate(rental.tanggalSewa)} - {formatDate(rental.tanggalKembali)}</span>
+                    <span className="text-sm font-semibold text-foreground">{formatCurrency(rental.totalHarga)}</span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

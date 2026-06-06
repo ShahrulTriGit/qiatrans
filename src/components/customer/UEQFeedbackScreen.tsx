@@ -80,19 +80,19 @@ function calculateUEQScales(answers: number[]): Record<string, number> {
 }
 
 function getScaleColor(value: number): string {
-  if (value >= 1.5) return 'bg-green-500'
-  if (value >= 0.8) return 'bg-green-400'
-  if (value >= 0) return 'bg-yellow-400'
+  if (value >= 1.5) return 'bg-success'
+  if (value >= 0.8) return 'bg-success/70'
+  if (value >= 0) return 'bg-warning'
   if (value >= -1) return 'bg-orange-400'
-  return 'bg-red-500'
+  return 'bg-destructive'
 }
 
 function getScaleTextColor(value: number): string {
-  if (value >= 1.5) return 'text-green-600'
-  if (value >= 0.8) return 'text-green-500'
-  if (value >= 0) return 'text-yellow-600'
+  if (value >= 1.5) return 'text-success'
+  if (value >= 0.8) return 'text-success/80'
+  if (value >= 0) return 'text-warning'
   if (value >= -1) return 'text-orange-500'
-  return 'text-red-600'
+  return 'text-destructive'
 }
 
 function getScaleLabel(value: number): string {
@@ -188,7 +188,7 @@ export default function UEQFeedbackScreen() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-primary text-primary-foreground px-4 py-3 flex items-center gap-3 shadow-md">
         <Button
@@ -269,7 +269,7 @@ export default function UEQFeedbackScreen() {
                           </span>
                         </div>
                       </div>
-                      <div className="relative h-4 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="relative h-4 bg-muted rounded-full overflow-hidden">
                         {/* Center line */}
                         <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-400 z-10" />
                         {/* Bar */}
@@ -293,17 +293,17 @@ export default function UEQFeedbackScreen() {
                 <Separator />
 
                 <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
-                  <div className="p-2 rounded-lg bg-red-50 border border-red-100">
-                    <p className="text-red-500">Buruk</p>
-                    <p className="font-bold text-red-700">&lt;-1</p>
+                  <div className="p-2 rounded-lg bg-destructive/10 border border-destructive/20">
+                    <p className="text-destructive">Buruk</p>
+                    <p className="font-bold text-destructive">&lt;-1</p>
                   </div>
-                  <div className="p-2 rounded-lg bg-yellow-50 border border-yellow-100">
-                    <p className="text-yellow-500">Netral</p>
-                    <p className="font-bold text-yellow-700">-1 to +0.8</p>
+                  <div className="p-2 rounded-lg bg-warning/10 border border-warning/20">
+                    <p className="text-warning">Netral</p>
+                    <p className="font-bold text-warning">-1 to +0.8</p>
                   </div>
-                  <div className="p-2 rounded-lg bg-green-50 border border-green-100">
-                    <p className="text-green-500">Baik</p>
-                    <p className="font-bold text-green-700">&gt;+0.8</p>
+                  <div className="p-2 rounded-lg bg-success/10 border border-success/20">
+                    <p className="text-success">Baik</p>
+                    <p className="font-bold text-success">&gt;+0.8</p>
                   </div>
                 </div>
 
@@ -327,18 +327,18 @@ export default function UEQFeedbackScreen() {
                     className="space-y-2"
                   >
                     {/* Semantic differential layout */}
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs text-left w-20 shrink-0 text-muted-foreground">
+                    <div className="flex items-center gap-0.5">
+                      <span className="text-[10px] text-left w-12 sm:w-20 shrink-0 text-muted-foreground leading-tight">
                         {item.left}
                       </span>
-                      <div className="flex-1 flex justify-center gap-0.5">
+                      <div className="flex-1 flex justify-center gap-px sm:gap-0.5">
                         {[1, 2, 3, 4, 5, 6, 7].map((value) => (
                           <label
                             key={value}
-                            className={`flex items-center justify-center size-8 rounded-full cursor-pointer transition-colors border text-xs font-medium ${
+                            className={`flex items-center justify-center size-6 sm:size-8 rounded-full cursor-pointer transition-colors border text-[10px] sm:text-xs font-medium ${
                               answers[idx] === value
                                 ? 'bg-primary text-primary-foreground border-primary'
-                                : 'bg-white border-gray-300 hover:border-primary/50'
+                                : 'bg-background border-border hover:border-primary/50'
                             }`}
                           >
                             <input
@@ -353,7 +353,7 @@ export default function UEQFeedbackScreen() {
                           </label>
                         ))}
                       </div>
-                      <span className="text-xs text-right w-20 shrink-0 text-muted-foreground">
+                      <span className="text-[10px] text-right w-12 sm:w-20 shrink-0 text-muted-foreground leading-tight">
                         {item.right}
                       </span>
                     </div>

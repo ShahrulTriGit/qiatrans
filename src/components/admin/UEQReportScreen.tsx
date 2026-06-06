@@ -184,7 +184,8 @@ export default function UEQReportScreen() {
           <CardDescription>Detail skor setiap responden</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto max-h-96 overflow-y-auto">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto max-h-96 overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -233,6 +234,44 @@ export default function UEQReportScreen() {
                 )}
               </TableBody>
             </Table>
+          </div>
+          {/* Mobile cards */}
+          <div className="md:hidden space-y-3 max-h-96 overflow-y-auto">
+            {results.length === 0 ? (
+              <p className="text-center py-8 text-muted-foreground">Tidak ada data UEQ</p>
+            ) : (
+              results.map((result) => (
+                <div key={result.id} className="p-4 border border-border rounded-lg">
+                  <p className="font-medium text-sm mb-2">{result.user?.nama || `User ${result.userId.slice(0, 6)}`}</p>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div>
+                      <p className="text-muted-foreground">Attract.</p>
+                      <p className={`font-semibold ${getScoreColor(result.attractiveness)}`}>{result.attractiveness.toFixed(2)}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Persp.</p>
+                      <p className={`font-semibold ${getScoreColor(result.perspicuity)}`}>{result.perspicuity.toFixed(2)}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Effic.</p>
+                      <p className={`font-semibold ${getScoreColor(result.efficiency)}`}>{result.efficiency.toFixed(2)}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Depend.</p>
+                      <p className={`font-semibold ${getScoreColor(result.dependability)}`}>{result.dependability.toFixed(2)}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Stimul.</p>
+                      <p className={`font-semibold ${getScoreColor(result.stimulation)}`}>{result.stimulation.toFixed(2)}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Novelty</p>
+                      <p className={`font-semibold ${getScoreColor(result.novelty)}`}>{result.novelty.toFixed(2)}</p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>
