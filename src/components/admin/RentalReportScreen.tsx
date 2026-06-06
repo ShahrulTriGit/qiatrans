@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import {
   Download,
@@ -63,11 +63,7 @@ export default function RentalReportScreen() {
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
 
-  useEffect(() => {
-    fetchRentals()
-  }, [])
-
-  async function fetchRentals() {
+  const fetchRentals = useCallback(async () => {
     try {
       const res = await fetch('/api/rentals')
       if (res.ok) {
@@ -79,7 +75,11 @@ export default function RentalReportScreen() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchRentals()
+  }, [fetchRentals])
 
   const filteredRentals = rentals.filter((r) => {
     if (dateFrom && r.tanggalSewa < dateFrom) return false

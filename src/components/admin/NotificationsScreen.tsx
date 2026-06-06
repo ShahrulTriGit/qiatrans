@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import {
   Bell,
@@ -59,11 +59,7 @@ export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchNotifications()
-  }, [])
-
-  async function fetchNotifications() {
+  const fetchNotifications = useCallback(async () => {
     try {
       const res = await fetch('/api/notifications')
       if (res.ok) {
@@ -75,7 +71,11 @@ export default function NotificationsScreen() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchNotifications()
+  }, [fetchNotifications])
 
   async function markAsRead(id: string) {
     try {

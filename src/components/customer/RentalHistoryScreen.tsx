@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { ArrowLeft, Car, Star, BarChart3 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { Card, CardContent } from '@/components/ui/card'
@@ -31,11 +31,7 @@ export default function RentalHistoryScreen() {
   const [loading, setLoading] = useState(true)
   const [evaluatedRentals, setEvaluatedRentals] = useState<Set<string>>(new Set())
 
-  useEffect(() => {
-    if (session?.user?.id) fetchRentals()
-  }, [session?.user?.id])
-
-  const fetchRentals = async () => {
+  const fetchRentals = useCallback(async () => {
     try {
       const res = await fetch(
         `/api/rentals?userId=${session?.user?.id}&status=COMPLETED`
@@ -71,7 +67,11 @@ export default function RentalHistoryScreen() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [session?.user?.id])
+
+  useEffect(() => {
+    if (session?.user?.id) fetchRentals()
+  }, [session?.user?.id, fetchRentals])
 
   return (
     <div className="min-h-screen bg-background pb-8">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import {
   BarChart3,
@@ -53,11 +53,7 @@ export default function SUSReportScreen() {
   const [results, setResults] = useState<SUSResult[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchResults()
-  }, [])
-
-  async function fetchResults() {
+  const fetchResults = useCallback(async () => {
     try {
       const res = await fetch('/api/sus')
       if (res.ok) {
@@ -69,7 +65,11 @@ export default function SUSReportScreen() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchResults()
+  }, [fetchResults])
 
   const averageScore = results.length > 0
     ? results.reduce((sum, r) => sum + r.skor, 0) / results.length

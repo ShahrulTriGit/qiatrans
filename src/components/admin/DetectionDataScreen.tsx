@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Search, ScanEye, ShieldCheck, ShieldAlert, MapPin } from 'lucide-react'
 import {
@@ -51,11 +51,7 @@ export default function DetectionDataScreen() {
   const [search, setSearch] = useState('')
   const [filterVerified, setFilterVerified] = useState<string>('all')
 
-  useEffect(() => {
-    fetchDetections()
-  }, [])
-
-  async function fetchDetections() {
+  const fetchDetections = useCallback(async () => {
     try {
       const res = await fetch('/api/detections')
       if (res.ok) {
@@ -67,7 +63,11 @@ export default function DetectionDataScreen() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchDetections()
+  }, [fetchDetections])
 
   const filteredDetections = detections.filter((d) => {
     const q = search.toLowerCase()

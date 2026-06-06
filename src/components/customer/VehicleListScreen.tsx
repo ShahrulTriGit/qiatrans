@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useCallback, useEffect, useState, useMemo } from 'react'
 import { ArrowLeft, Search, Car } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,11 +25,7 @@ export default function VehicleListScreen() {
   const [sortOption, setSortOption] = useState<SortOption>('terbaru')
   const [showSort, setShowSort] = useState(false)
 
-  useEffect(() => {
-    fetchVehicles()
-  }, [])
-
-  const fetchVehicles = async () => {
+  const fetchVehicles = useCallback(async () => {
     try {
       const res = await fetch('/api/vehicles')
       const data = await res.json()
@@ -41,7 +37,11 @@ export default function VehicleListScreen() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchVehicles()
+  }, [fetchVehicles])
 
   const filteredVehicles = useMemo(() => {
     let result = [...vehicles]

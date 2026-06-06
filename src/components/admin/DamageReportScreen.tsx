@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import {
   Car,
@@ -57,11 +57,7 @@ export default function DamageReportScreen() {
   const [loading, setLoading] = useState(true)
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>('all')
 
-  useEffect(() => {
-    fetchData()
-  }, [])
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     try {
       const [vRes, iRes, dRes] = await Promise.all([
         fetch('/api/vehicles'),
@@ -85,7 +81,11 @@ export default function DamageReportScreen() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   const filteredDetections = detections.filter((d) => {
     if (selectedVehicleId === 'all') return true

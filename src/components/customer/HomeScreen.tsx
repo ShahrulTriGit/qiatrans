@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   Car,
   Bell,
@@ -57,11 +57,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
 
-  useEffect(() => {
-    fetchVehicles()
-  }, [])
-
-  const fetchVehicles = async () => {
+  const fetchVehicles = useCallback(async () => {
     try {
       const res = await fetch('/api/vehicles')
       const data = await res.json()
@@ -73,7 +69,11 @@ export default function HomeScreen() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchVehicles()
+  }, [fetchVehicles])
 
   const popularVehicles = vehicles.slice(0, 6)
   const recommendedVehicles = vehicles.slice(0, 4)

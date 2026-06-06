@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavStore } from '@/stores/navStore'
 import { toast } from 'sonner'
 import {
@@ -70,11 +70,7 @@ export default function InspectionDataScreen() {
   const [search, setSearch] = useState('')
   const [filterJenis, setFilterJenis] = useState<string>('all')
 
-  useEffect(() => {
-    fetchInspections()
-  }, [])
-
-  async function fetchInspections() {
+  const fetchInspections = useCallback(async () => {
     try {
       const res = await fetch('/api/inspections')
       if (res.ok) {
@@ -86,7 +82,11 @@ export default function InspectionDataScreen() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchInspections()
+  }, [fetchInspections])
 
   const filteredInspections = inspections.filter((i) => {
     const q = search.toLowerCase()

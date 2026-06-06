@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useNavStore } from '@/stores/navStore'
 import { Card, CardContent } from '@/components/ui/card'
@@ -161,15 +161,7 @@ export default function InspectionHistoryScreen() {
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('all')
 
-  useEffect(() => {
-    if (session?.user?.id) {
-      fetchInspections()
-    } else {
-      setIsLoading(false)
-    }
-  }, [session?.user?.id])
-
-  const fetchInspections = async () => {
+  const fetchInspections = useCallback(async () => {
     setIsLoading(true)
     try {
       const res = await fetch(`/api/inspections?userId=${session?.user?.id}`)
@@ -185,7 +177,13 @@ export default function InspectionHistoryScreen() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [session?.user?.id])
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchInspections()
+    }
+  }, [session?.user?.id, fetchInspections])
 
   const filteredInspections = inspections.filter((insp) => {
     if (activeTab === 'all') return true

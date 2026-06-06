@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavStore } from '@/stores/navStore'
 import { useSession } from 'next-auth/react'
 import {
@@ -141,11 +141,7 @@ export default function DashboardScreen() {
   const [rentalStatusData, setRentalStatusData] = useState<StatusEntry[]>(defaultRentalStatusData)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchDashboardData()
-  }, [])
-
-  async function fetchDashboardData() {
+  const fetchDashboardData = useCallback(async () => {
     try {
       const [statsRes, rentalsRes] = await Promise.all([
         fetch('/api/stats'),
@@ -177,7 +173,11 @@ export default function DashboardScreen() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [fetchDashboardData])
 
   const statCards = [
     {

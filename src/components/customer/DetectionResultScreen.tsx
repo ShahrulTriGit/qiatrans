@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavStore } from '@/stores/navStore'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -99,35 +99,7 @@ export default function DetectionResultScreen() {
   const [imageTab, setImageTab] = useState('annotated')
   const [isMockData, setIsMockData] = useState(false)
 
-  if (!selectedInspectionId) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="sticky top-0 z-10 bg-primary text-primary-foreground px-4 py-3 flex items-center gap-3 shadow-md">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-primary-foreground hover:bg-primary/80"
-            onClick={goBack}
-          >
-            <ArrowLeft className="size-5" />
-          </Button>
-          <h1 className="text-lg font-semibold">Hasil Deteksi</h1>
-        </div>
-        <div className="p-4 flex flex-col items-center justify-center gap-3 py-20">
-          <ScanSearch className="size-12 text-muted-foreground" />
-          <p className="font-semibold text-muted-foreground">Inspeksi tidak ditemukan</p>
-          <p className="text-xs text-muted-foreground text-center">Silakan pilih inspeksi dari riwayat</p>
-          <Button variant="outline" onClick={goBack}>Kembali</Button>
-        </div>
-      </div>
-    )
-  }
-
-  useEffect(() => {
-    fetchInspectionData()
-  }, [selectedInspectionId])
-
-  const fetchInspectionData = async () => {
+  const fetchInspectionData = useCallback(async () => {
     setIsLoading(true)
     setIsMockData(false)
     try {
@@ -151,6 +123,34 @@ export default function DetectionResultScreen() {
     } finally {
       setIsLoading(false)
     }
+  }, [selectedInspectionId])
+
+  useEffect(() => {
+    fetchInspectionData()
+  }, [fetchInspectionData])
+
+  if (!selectedInspectionId) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="sticky top-0 z-10 bg-primary text-primary-foreground px-4 py-3 flex items-center gap-3 shadow-md">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-primary-foreground hover:bg-primary/80"
+            onClick={goBack}
+          >
+            <ArrowLeft className="size-5" />
+          </Button>
+          <h1 className="text-lg font-semibold">Hasil Deteksi</h1>
+        </div>
+        <div className="p-4 flex flex-col items-center justify-center gap-3 py-20">
+          <ScanSearch className="size-12 text-muted-foreground" />
+          <p className="font-semibold text-muted-foreground">Inspeksi tidak ditemukan</p>
+          <p className="text-xs text-muted-foreground text-center">Silakan pilih inspeksi dari riwayat</p>
+          <Button variant="outline" onClick={goBack}>Kembali</Button>
+        </div>
+      </div>
+    )
   }
 
   const getSeverityBadge = (severity: string) => {
@@ -291,7 +291,7 @@ export default function DetectionResultScreen() {
                   {detections.length > 0 && detections[0].gambarHasil ? (
                     <img
                       src={detections[0].gambarHasil}
-                      alt="Annotated detection result"
+                      alt="Hasil deteksi dengan anotasi"
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -342,7 +342,7 @@ export default function DetectionResultScreen() {
                   {detections.length > 0 && detections[0].gambarAsli ? (
                     <img
                       src={detections[0].gambarAsli}
-                      alt="Original image"
+                      alt="Gambar asli kendaraan"
                       className="w-full h-full object-cover"
                     />
                   ) : (

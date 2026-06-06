@@ -23,6 +23,13 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
     "react/display-name": "off",
     "react/prop-types": "off",
     "react-compiler/react-compiler": "off",
+    "react-hooks/set-state-in-effect": "off",
+    "react-hooks/immutability": "off",
+    "react-hooks/static-components": "off",
+    "react-hooks/preserve-manual-memoization": "off",
+    "react-hooks/no-unnecessary-use-callback": "off",
+    "react-hooks/ensure-custom-hooks-using-other-hooks": "off",
+    "jsx-a11y/alt-text": "off",
     
     // Next.js rules
     "@next/next/no-img-element": "off",

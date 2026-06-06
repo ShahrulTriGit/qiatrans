@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useNavStore } from '@/stores/navStore'
 import { Card, CardContent } from '@/components/ui/card'
@@ -121,11 +121,7 @@ export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    fetchNotifications()
-  }, [])
-
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     setIsLoading(true)
     try {
       const res = await fetch('/api/notifications')
@@ -141,7 +137,11 @@ export default function NotificationsScreen() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchNotifications()
+  }, [fetchNotifications])
 
   const markAsRead = async (id: string) => {
     try {

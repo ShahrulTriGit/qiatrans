@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavStore } from '@/stores/navStore'
 import { toast } from 'sonner'
 import {
@@ -58,11 +58,7 @@ export default function RentalManagementScreen() {
   const [search, setSearch] = useState('')
   const [activeTab, setActiveTab] = useState<string>('all')
 
-  useEffect(() => {
-    fetchRentals()
-  }, [])
-
-  async function fetchRentals() {
+  const fetchRentals = useCallback(async () => {
     try {
       const res = await fetch('/api/rentals')
       if (res.ok) {
@@ -74,7 +70,11 @@ export default function RentalManagementScreen() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchRentals()
+  }, [fetchRentals])
 
   async function updateRentalStatus(id: string, status: RentalStatus) {
     try {

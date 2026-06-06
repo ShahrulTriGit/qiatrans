@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useCallback, useEffect, useState, useMemo } from 'react'
 import { ArrowLeft, Car, CalendarDays, StickyNote } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
@@ -32,11 +32,7 @@ export default function BookingScreen() {
   const [openStart, setOpenStart] = useState(false)
   const [openEnd, setOpenEnd] = useState(false)
 
-  useEffect(() => {
-    if (selectedVehicleId) fetchVehicle()
-  }, [selectedVehicleId])
-
-  const fetchVehicle = async () => {
+  const fetchVehicle = useCallback(async () => {
     try {
       const res = await fetch(`/api/vehicles/${selectedVehicleId}`)
       const data = await res.json()
@@ -53,7 +49,11 @@ export default function BookingScreen() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedVehicleId])
+
+  useEffect(() => {
+    if (selectedVehicleId) fetchVehicle()
+  }, [selectedVehicleId, fetchVehicle])
 
   const days = useMemo(() => {
     if (!tanggalSewa || !tanggalKembali) return 0

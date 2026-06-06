@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useCallback, useEffect, useState, useMemo } from 'react'
 import { ArrowLeft, Car, ClipboardCheck, Star } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { Card, CardContent } from '@/components/ui/card'
@@ -32,17 +32,22 @@ const statusConfig: Record<RentalStatus, { label: string; className: string }> =
   CANCELLED: { label: 'Dibatalkan', className: 'bg-muted text-muted-foreground' },
 }
 
+const EmptyStateComponent = ({ message }: { message: string }) => (
+  <div className="flex flex-col items-center justify-center py-16">
+    <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-3">
+      <Car className="w-7 h-7 text-muted-foreground" />
+    </div>
+    <p className="text-sm text-muted-foreground">{message}</p>
+  </div>
+)
+
 export default function MyRentalsScreen() {
   const { goBack, setCustomerPage, selectedRentalId } = useNavStore()
   const { data: session } = useSession()
   const [rentals, setRentals] = useState<Rental[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (session?.user?.id) fetchRentals()
-  }, [session?.user?.id])
-
-  const fetchRentals = async () => {
+  const fetchRentals = useCallback(async () => {
     try {
       const res = await fetch(`/api/rentals?userId=${session?.user?.id}`)
       const data = await res.json()
@@ -52,7 +57,11 @@ export default function MyRentalsScreen() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [session?.user?.id])
+
+  useEffect(() => {
+    if (session?.user?.id) fetchRentals()
+  }, [session?.user?.id, fetchRentals])
 
   const activeRentals = useMemo(
     () => rentals.filter((r) => r.status === 'ACTIVE'),
@@ -151,15 +160,6 @@ export default function MyRentalsScreen() {
     )
   }
 
-  const EmptyState = ({ message }: { message: string }) => (
-    <div className="flex flex-col items-center justify-center py-16">
-      <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-3">
-        <Car className="w-7 h-7 text-muted-foreground" />
-      </div>
-      <p className="text-sm text-muted-foreground">{message}</p>
-    </div>
-  )
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -205,7 +205,7 @@ export default function MyRentalsScreen() {
                 </Card>
               ))
             ) : activeRentals.length === 0 ? (
-              <EmptyState message="Belum ada rental aktif" />
+              <EmptyStateComponent message="Belum ada rental aktif" />
             ) : (
               activeRentals.map((r) => <RentalCard key={r.id} rental={r} />)
             )}
@@ -213,7 +213,7 @@ export default function MyRentalsScreen() {
 
           <TabsContent value="pending" className="mt-4 space-y-3">
             {pendingRentals.length === 0 ? (
-              <EmptyState message="Tidak ada rental pending" />
+              <EmptyStateComponent message="Tidak ada rental pending" />
             ) : (
               pendingRentals.map((r) => <RentalCard key={r.id} rental={r} />)
             )}
@@ -235,7 +235,7 @@ export default function MyRentalsScreen() {
                 </Card>
               ))
             ) : rentals.length === 0 ? (
-              <EmptyState message="Belum ada rental" />
+              <EmptyStateComponent message="Belum ada rental" />
             ) : (
               rentals.map((r) => <RentalCard key={r.id} rental={r} />)
             )}

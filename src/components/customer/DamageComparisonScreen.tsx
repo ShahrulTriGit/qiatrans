@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavStore } from '@/stores/navStore'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -153,35 +153,7 @@ export default function DamageComparisonScreen() {
   const [isLoading, setIsLoading] = useState(true)
   const [isDownloading, setIsDownloading] = useState(false)
 
-  if (!selectedRentalId) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="sticky top-0 z-10 bg-primary text-primary-foreground px-4 py-3 flex items-center gap-3 shadow-md">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-primary-foreground hover:bg-primary/80"
-            onClick={goBack}
-          >
-            <ArrowLeft className="size-5" />
-          </Button>
-          <h1 className="text-lg font-semibold">Perbandingan Kondisi Kendaraan</h1>
-        </div>
-        <div className="p-4 flex flex-col items-center justify-center gap-3 py-20">
-          <Car className="size-12 text-muted-foreground" />
-          <p className="font-semibold text-muted-foreground">Rental tidak dipilih</p>
-          <p className="text-xs text-muted-foreground text-center">Silakan pilih rental terlebih dahulu</p>
-          <Button variant="outline" onClick={goBack}>Kembali</Button>
-        </div>
-      </div>
-    )
-  }
-
-  useEffect(() => {
-    fetchComparisonData()
-  }, [selectedRentalId])
-
-  const fetchComparisonData = async () => {
+  const fetchComparisonData = useCallback(async () => {
     setIsLoading(true)
     try {
       const res = await fetch(`/api/inspections?rentalId=${selectedRentalId}`)
@@ -243,6 +215,34 @@ export default function DamageComparisonScreen() {
     } finally {
       setIsLoading(false)
     }
+  }, [selectedRentalId])
+
+  useEffect(() => {
+    fetchComparisonData()
+  }, [fetchComparisonData])
+
+  if (!selectedRentalId) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="sticky top-0 z-10 bg-primary text-primary-foreground px-4 py-3 flex items-center gap-3 shadow-md">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-primary-foreground hover:bg-primary/80"
+            onClick={goBack}
+          >
+            <ArrowLeft className="size-5" />
+          </Button>
+          <h1 className="text-lg font-semibold">Perbandingan Kondisi Kendaraan</h1>
+        </div>
+        <div className="p-4 flex flex-col items-center justify-center gap-3 py-20">
+          <Car className="size-12 text-muted-foreground" />
+          <p className="font-semibold text-muted-foreground">Rental tidak dipilih</p>
+          <p className="text-xs text-muted-foreground text-center">Silakan pilih rental terlebih dahulu</p>
+          <Button variant="outline" onClick={goBack}>Kembali</Button>
+        </div>
+      </div>
+    )
   }
 
   const handleDownloadReport = () => {
@@ -437,7 +437,7 @@ export default function DamageComparisonScreen() {
                   {comparison?.beforeDetections.length && comparison.beforeDetections[0].gambarHasil ? (
                     <img
                       src={comparison.beforeDetections[0].gambarHasil}
-                      alt="Sebelum rental"
+                      alt="Kondisi kendaraan sebelum rental"
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -464,7 +464,7 @@ export default function DamageComparisonScreen() {
                   {comparison?.afterDetections.length && comparison.afterDetections[0].gambarHasil ? (
                     <img
                       src={comparison.afterDetections[0].gambarHasil}
-                      alt="Sesudah rental"
+                      alt="Kondisi kendaraan sesudah rental"
                       className="w-full h-full object-cover"
                     />
                   ) : (

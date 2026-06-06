@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import {
   Card,
@@ -63,11 +63,7 @@ export default function UEQReportScreen() {
   const [results, setResults] = useState<UEQResult[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchResults()
-  }, [])
-
-  async function fetchResults() {
+  const fetchResults = useCallback(async () => {
     try {
       const res = await fetch('/api/ueq')
       if (res.ok) {
@@ -79,7 +75,11 @@ export default function UEQReportScreen() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchResults()
+  }, [fetchResults])
 
   // Calculate average scores for each scale
   const averages = UEQ_SCALES.map((scale) => {

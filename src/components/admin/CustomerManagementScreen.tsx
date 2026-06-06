@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Search, Users, ShieldCheck, ShieldX, Mail, Phone, Loader2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
@@ -36,11 +36,7 @@ export default function CustomerManagementScreen() {
   const [verifyTarget, setVerifyTarget] = useState<User | null>(null)
   const [toggling, setToggling] = useState(false)
 
-  useEffect(() => {
-    fetchCustomers()
-  }, [])
-
-  async function fetchCustomers() {
+  const fetchCustomers = useCallback(async () => {
     try {
       const [custRes, rentalRes] = await Promise.all([
         fetch('/api/users?role=CUSTOMER'),
@@ -66,7 +62,11 @@ export default function CustomerManagementScreen() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchCustomers()
+  }, [fetchCustomers])
 
   async function handleToggleVerify() {
     if (!verifyTarget) return

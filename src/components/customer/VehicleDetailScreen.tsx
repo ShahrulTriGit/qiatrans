@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   ArrowLeft,
   Car,
@@ -32,13 +32,7 @@ export default function VehicleDetailScreen() {
   const [vehicle, setVehicle] = useState<Vehicle | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (selectedVehicleId) {
-      fetchVehicle()
-    }
-  }, [selectedVehicleId])
-
-  const fetchVehicle = async () => {
+  const fetchVehicle = useCallback(async () => {
     try {
       const res = await fetch(`/api/vehicles/${selectedVehicleId}`)
       const data = await res.json()
@@ -50,7 +44,13 @@ export default function VehicleDetailScreen() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedVehicleId])
+
+  useEffect(() => {
+    if (selectedVehicleId) {
+      fetchVehicle()
+    }
+  }, [selectedVehicleId, fetchVehicle])
 
   if (loading) {
     return (
