@@ -88,11 +88,15 @@ export default function VehicleDetailScreen() {
   return (
     <div className="min-h-screen bg-background pb-28">
       {/* Vehicle Image */}
-      <div className="relative h-64 bg-gradient-to-br from-qia-dark to-primary flex items-center justify-center">
-        <Car className="w-24 h-24 text-white/20" strokeWidth={1} />
+      <div className="relative h-64 overflow-hidden bg-gradient-to-br from-qia-dark to-primary flex items-center justify-center">
+        {vehicle.foto ? (
+          <img src={vehicle.foto} alt={vehicle.namaMobil} className="absolute inset-0 w-full h-full object-cover" />
+        ) : (
+          <Car className="w-24 h-24 text-white/20" strokeWidth={1} />
+        )}
         <button
           onClick={goBack}
-          className="absolute top-12 left-4 w-10 h-10 flex items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors"
+          className="absolute top-12 left-4 w-10 h-10 flex items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors z-10"
         >
           <ArrowLeft className="w-5 h-5 text-white" />
         </button>

@@ -197,8 +197,12 @@ export default function VehicleListScreen() {
                   setCustomerPage('vehicle-detail', { vehicleId: v.id })
                 }
               >
-                <div className="h-28 bg-gradient-to-br from-qia-light to-muted rounded-t-xl flex items-center justify-center">
-                  <Car className="w-8 h-8 text-primary/30" />
+                <div className="h-28 rounded-t-xl overflow-hidden bg-gradient-to-br from-qia-light to-muted flex items-center justify-center">
+                  {v.foto ? (
+                    <img src={v.foto} alt={v.namaMobil} className="w-full h-full object-cover" />
+                  ) : (
+                    <Car className="w-8 h-8 text-primary/30" />
+                  )}
                 </div>
                 <CardContent className="p-3">
                   <div className="flex items-start justify-between gap-1">
