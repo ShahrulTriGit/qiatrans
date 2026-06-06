@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile } from 'fs/promises'
-import path from 'path'
+import { put } from '@vercel/blob'
 import { v4 as uuidv4 } from 'uuid'
 
 export async function POST(request: NextRequest) {
@@ -15,21 +14,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
+    const ext = file.name.split('.').pop() || 'jpg'
+    const filename = `${uuidv4()}.${ext}`
 
-    // Generate unique filename
-    const ext = path.extname(file.name)
-    const filename = `${uuidv4()}${ext}`
-    const filepath = path.join(process.cwd(), 'public', 'uploads', filename)
-
-    await writeFile(filepath, buffer)
-
-    const url = `/uploads/${filename}`
+    const blob = await put(filename, file, {
+      access: 'public',
+      addRandomSuffix: false,
+    })
 
     return NextResponse.json({
       success: true,
-      data: { url, filename },
+      data: { url: blob.url, filename },
       message: 'File berhasil diupload',
     })
   } catch (error) {
