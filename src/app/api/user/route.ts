@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from 'next-auth/react'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/firestore'
 import { compare, hash } from 'bcryptjs'
 
 // GET /api/user - Get current user profile
 export async function GET(request: NextRequest) {
   try {
-    const session = await getSession()
+    const session = await getServerSession(authOptions)
     if (!session || !session.user?.id) {
       return NextResponse.json(
         { success: false, error: 'Anda harus login terlebih dahulu' },
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
 // PUT /api/user - Update current user profile
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getSession()
+    const session = await getServerSession(authOptions)
     if (!session || !session.user?.id) {
       return NextResponse.json(
         { success: false, error: 'Anda harus login terlebih dahulu' },
@@ -93,7 +94,7 @@ export async function PUT(request: NextRequest) {
 // POST /api/user - Change password
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession()
+    const session = await getServerSession(authOptions)
     if (!session || !session.user?.id) {
       return NextResponse.json(
         { success: false, error: 'Anda harus login terlebih dahulu' },

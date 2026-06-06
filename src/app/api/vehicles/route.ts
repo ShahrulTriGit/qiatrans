@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from 'next-auth/react'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/firestore'
 
 export async function GET(request: NextRequest) {
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession()
+    const session = await getServerSession(authOptions)
     if (!session || session.user.role !== 'ADMIN') {
       return NextResponse.json(
         { success: false, error: 'Akses ditolak. Hanya admin yang dapat menambah kendaraan' },
@@ -61,6 +62,7 @@ export async function POST(request: NextRequest) {
       transmisi,
       bahanBakar,
       kapasitas,
+      status,
       foto,
       deskripsi,
     } = body
@@ -85,6 +87,7 @@ export async function POST(request: NextRequest) {
         transmisi: transmisi || 'Manual',
         bahanBakar: bahanBakar || 'Bensin',
         kapasitas: Number(kapasitas) || 5,
+        status: status || 'TERSEDIA',
         foto: foto || '',
         deskripsi: deskripsi || '',
       },

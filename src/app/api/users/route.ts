@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from 'next-auth/react'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/firestore'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getSession()
+    const session = await getServerSession(authOptions)
     if (!session || session.user.role !== 'ADMIN') {
       return NextResponse.json(
         { success: false, error: 'Akses ditolak. Hanya admin yang dapat melihat daftar pengguna' },
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getSession()
+    const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'Anda harus login terlebih dahulu' },
