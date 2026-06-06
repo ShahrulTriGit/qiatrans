@@ -39,13 +39,13 @@ export default function CustomerManagementScreen() {
   const fetchCustomers = useCallback(async () => {
     try {
       const [custRes, rentalRes] = await Promise.all([
-        fetch('/api/users?role=CUSTOMER'),
+        fetch('/api/users'),
         fetch('/api/rentals'),
       ])
 
       if (custRes.ok) {
         const data = await custRes.json()
-        setCustomers(data.data || [])
+        setCustomers((data.data || []).filter((u: User) => u.role === 'CUSTOMER'))
       }
 
       if (rentalRes.ok) {
