@@ -65,53 +65,55 @@ export default function AdminSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
-        {groups.map((group) => (
-          <SidebarGroup key={group}>
-            <SidebarGroupLabel>{group}</SidebarGroupLabel>
-            <SidebarMenu>
-              {menuItems
-                .filter((item) => item.group === group)
-                .map((item) => {
-                  const Icon = item.icon
-                  const isActive = adminPage === item.page
-                  return (
-                    <SidebarMenuItem key={item.page}>
-                      <SidebarMenuButton
-                        isActive={isActive}
-                        onClick={() => setAdminPage(item.page)}
-                      >
-                        <Icon />
-                        <span>{item.label}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
-                })}
-            </SidebarMenu>
-          </SidebarGroup>
-        ))}
-      </SidebarContent>
-
-      <SidebarSeparator />
-
-      <SidebarFooter className="px-4 py-3">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground text-sm font-bold shrink-0">
-            {session?.user?.nama?.charAt(0) || 'A'}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">{session?.user?.nama || 'Admin'}</p>
-            <p className="text-xs text-sidebar-foreground/50 truncate">{session?.user?.email}</p>
-          </div>
+      <SidebarContent className="overflow-hidden">
+        <div className="flex-1 overflow-y-auto">
+          {groups.map((group) => (
+            <SidebarGroup key={group}>
+              <SidebarGroupLabel>{group}</SidebarGroupLabel>
+              <SidebarMenu>
+                {menuItems
+                  .filter((item) => item.group === group)
+                  .map((item) => {
+                    const Icon = item.icon
+                    const isActive = adminPage === item.page
+                    return (
+                      <SidebarMenuItem key={item.page}>
+                        <SidebarMenuButton
+                          isActive={isActive}
+                          onClick={() => setAdminPage(item.page)}
+                        >
+                          <Icon />
+                          <span>{item.label}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    )
+                  })}
+              </SidebarMenu>
+            </SidebarGroup>
+          ))}
         </div>
-        <button
-          onClick={() => signOut()}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
-        >
-          <LogOut className="h-4 w-4" />
-          <span>Keluar</span>
-        </button>
-      </SidebarFooter>
+
+        <SidebarSeparator className="mx-0" />
+
+        <div className="px-2 py-3">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground text-sm font-bold shrink-0">
+              {session?.user?.nama?.charAt(0) || 'A'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{session?.user?.nama || 'Admin'}</p>
+              <p className="text-xs text-sidebar-foreground/50 truncate">{session?.user?.email}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => signOut()}
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Keluar</span>
+          </button>
+        </div>
+      </SidebarContent>
     </Sidebar>
   )
 }
