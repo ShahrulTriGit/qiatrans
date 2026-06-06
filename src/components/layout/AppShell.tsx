@@ -165,7 +165,7 @@ export default function AppShell() {
     return (
       <SidebarProvider>
         <AdminSidebar />
-        <SidebarInset className="md:ml-64 p-4 lg:p-6 max-w-7xl mx-auto w-full">
+        <SidebarInset className="md:ml-64 p-4 lg:p-6 w-full">
           <SidebarTrigger className="mb-4 lg:hidden" />
           <AdminRouter />
         </SidebarInset>
