@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react'
 import { useNavStore } from '@/stores/navStore'
 import BottomNav from '@/components/layout/BottomNav'
 import AdminSidebar from '@/components/layout/AdminSidebar'
+import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar'
 
 // Auth screens
 import SplashScreen from '@/components/auth/SplashScreen'
@@ -162,14 +163,13 @@ export default function AppShell() {
 
   if (isAdmin) {
     return (
-      <div className="min-h-screen bg-background">
+      <SidebarProvider>
         <AdminSidebar />
-        <main className="ml-0 lg:ml-64 min-h-screen pb-4">
-          <div className="p-4 lg:p-6 max-w-7xl mx-auto">
-            <AdminRouter />
-          </div>
-        </main>
-      </div>
+        <SidebarInset className="p-4 lg:p-6 max-w-7xl mx-auto w-full">
+          <SidebarTrigger className="mb-4 lg:hidden" />
+          <AdminRouter />
+        </SidebarInset>
+      </SidebarProvider>
     )
   }
 
