@@ -57,16 +57,27 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === 'google') {
+        const adminEmails = (process.env.ADMIN_EMAILS ?? '').split(',').map(e => e.trim().toLowerCase())
+        const isAdmin = adminEmails.includes(user.email?.toLowerCase() ?? '')
+        const role = isAdmin ? 'ADMIN' : 'CUSTOMER'
+
         const existing = await db.user.findFirst({
           where: { email: user.email! },
         })
-        if (!existing) {
+        if (existing) {
+          if (existing.role !== role) {
+            await db.user.update({
+              where: { id: existing.id as string },
+              data: { role },
+            })
+          }
+        } else {
           await db.user.create({
             data: {
               nama: user.name!,
               email: user.email!,
               password: '',
-              role: 'CUSTOMER',
+              role,
               verified: true,
               noTelepon: '',
               alamat: '',
