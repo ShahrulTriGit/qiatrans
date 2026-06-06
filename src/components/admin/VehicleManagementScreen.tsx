@@ -451,9 +451,41 @@ export default function VehicleManagementScreen() {
               <Label htmlFor="kapasitas">Kapasitas</Label>
               <Input id="kapasitas" type="number" value={form.kapasitas} onChange={(e) => setForm({ ...form, kapasitas: parseInt(e.target.value) || 0 })} />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="foto">URL Foto</Label>
-              <Input id="foto" value={form.foto} onChange={(e) => setForm({ ...form, foto: e.target.value })} placeholder="https://..." />
+            <div className="space-y-2 sm:col-span-2">
+              <Label>Foto Mobil</Label>
+              <div className="flex items-start gap-4">
+                <div className="w-24 h-24 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0 border">
+                  {form.foto ? (
+                    <img src={form.foto} alt="Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <Car className="w-8 h-8 text-muted-foreground" />
+                  )}
+                </div>
+                <div className="flex-1 space-y-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      const formData = new FormData()
+                      formData.append('file', file)
+                      try {
+                        const res = await fetch('/api/upload', { method: 'POST', body: formData })
+                        const data = await res.json()
+                        if (data.success) {
+                          setForm({ ...form, foto: data.data.url })
+                          toast.success('Foto berhasil diupload')
+                        }
+                      } catch {
+                        toast.error('Gagal mengupload foto')
+                      }
+                    }}
+                    className="h-10"
+                  />
+                  <p className="text-xs text-muted-foreground">Format: JPG, PNG. Maks 5MB</p>
+                </div>
+              </div>
             </div>
             <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="deskripsi">Deskripsi</Label>
