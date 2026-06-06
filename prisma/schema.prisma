@@ -1,0 +1,177 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  nama          String
+  email         String   @unique
+  password      String
+  role          String   @default("CUSTOMER") // CUSTOMER | ADMIN
+  fotoProfil    String?
+  noKTP         String?
+  noSIM         String?
+  fotoKTP       String?
+  fotoSIM       String?
+  alamat        String?
+  noTelepon     String?
+  verified      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  rentals       Rental[]
+  susResults    SUSResult[]
+  ueqResults    UEQResult[]
+  notifications Notification[]
+}
+
+model Vehicle {
+  id            String   @id @default(cuid())
+  namaMobil     String
+  merk          String
+  model         String
+  tahun         Int
+  warna         String
+  platNomor     String
+  hargaSewa     Int
+  kategori      String   // SUV | Sedan | MPV | Hatchback | Pickup
+  transmisi     String   // Manual | Automatic
+  bahanBakar    String   // Bensin | Diesel | Hybrid | Listrik
+  kapasitas     Int
+  status        String   @default("TERSEDIA") // TERSEDIA | DISERWA | MAINTENANCE
+  foto          String
+  deskripsi     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  rentals       Rental[]
+  inspections   Inspection[]
+}
+
+model Rental {
+  id              String   @id @default(cuid())
+  userId          String
+  vehicleId       String
+  tanggalSewa     DateTime
+  tanggalKembali  DateTime
+  tanggalPengembalian DateTime?
+  status          String   @default("PENDING") // PENDING | ACTIVE | COMPLETED | CANCELLED
+  totalHarga      Int
+  catatan         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id])
+  vehicle         Vehicle  @relation(fields: [vehicleId], references: [id])
+  inspections     Inspection[]
+  susResults      SUSResult[]
+  ueqResults      UEQResult[]
+}
+
+model Inspection {
+  id              String   @id @default(cuid())
+  rentalId        String
+  vehicleId       String
+  jenisInspeksi   String   // SEBELUM_RENTAL | SESUDAH_RENTAL
+  tanggal         DateTime @default(now())
+  status          String   @default("PENDING") // PENDING | COMPLETED | VERIFIED
+  catatan         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  rental          Rental   @relation(fields: [rentalId], references: [id])
+  vehicle         Vehicle  @relation(fields: [vehicleId], references: [id])
+  detections      DetectionResult[]
+}
+
+model DetectionResult {
+  id              String   @id @default(cuid())
+  inspectionId    String
+  lokasiLecet     String
+  confidence      Float
+  gambarAsli      String
+  gambarHasil     String
+  severity        String   @default("RINGAN") // RINGAN | SEDANG | BERAT
+  verified        Boolean  @default(false)
+  verifiedBy      String?
+  createdAt       DateTime @default(now())
+
+  inspection      Inspection @relation(fields: [inspectionId], references: [id])
+}
+
+model SUSResult {
+  id          String   @id @default(cuid())
+  userId      String
+  rentalId    String
+  q1          Int // Saya pikir saya akan sering menggunakan sistem ini
+  q2          Int // Saya menemukan sistem ini tidak perlu rumit
+  q3          Int // Saya pikir sistem ini mudah digunakan
+  q4          Int // Saya pikir saya akan membutuhkan dukungan teknis untuk menggunakan sistem ini
+  q5          Int // Saya menemukan berbagai fungsi dalam sistem ini terintegrasi dengan baik
+  q6          Int // Saya pikir ada terlalu banyak inkonsistensi dalam sistem ini
+  q7          Int // Saya membayangkan kebanyakan orang akan belajar menggunakan sistem ini dengan sangat cepat
+  q8          Int // Saya menemukan sistem ini sangat rumit untuk digunakan
+  q9          Int // Saya merasa sangat percaya diri menggunakan sistem ini
+  q10         Int // Saya perlu belajar banyak hal sebelum dapat mulai menggunakan sistem ini
+  skor        Float
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+  rental      Rental   @relation(fields: [rentalId], references: [id])
+}
+
+model UEQResult {
+  id              String   @id @default(cuid())
+  userId          String
+  rentalId        String
+  attractiveness  Float
+  perspicuity     Float
+  efficiency      Float
+  dependability   Float
+  stimulation     Float
+  novelty         Float
+  q1              Int // membosankan - menarik
+  q2              Int // tidak praktis - praktis
+  q3              Int // rumit - mudah
+  q4              Int // tidak dapat diprediksi - dapat diprediksi
+  q5              Int // kuno - inovatif
+  q6              Int // membosankan - mengasyikkan
+  q7              Int // tidak menarik - menarik
+  q8              Int // sulit dipelajari - mudah dipelajari
+  q9              Int // kaku - fleksibel
+  q10             Int // ineffisien - effisien
+  q11             Int // ketinggalan zaman - terkini
+  q12             Int // konvensional - inventif
+  q13             Int // mengganggu - mendukung
+  q14             Int // biasa - luar biasa
+  q15             Int // tidak aman - aman
+  q16             Int // memotivasi - tidak memotivasi
+  q17             Int // tidak inovatif - kreatif
+  q18             Int // lambat - cepat
+  q19             Int // tidak jelas - jelas
+  q20             Int // menghambat - mendukung
+  q21             Int // tradisional - canggih
+  q22             Int // konservatif - inovatif
+  q23             Int // tidak berguna - berguna
+  createdAt       DateTime @default(now())
+
+  user            User     @relation(fields: [userId], references: [id])
+  rental          Rental   @relation(fields: [rentalId], references: [id])
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  message     String
+  type        String   // INFO | WARNING | SUCCESS | ERROR
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+}

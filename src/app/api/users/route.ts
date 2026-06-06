@@ -1,0 +1,130 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getSession } from 'next-auth/react'
+import { db } from '@/lib/db'
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getSession()
+    if (!session || session.user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { success: false, error: 'Akses ditolak. Hanya admin yang dapat melihat daftar pengguna' },
+        { status: 403 }
+      )
+    }
+
+    const { searchParams } = new URL(request.url)
+    const search = searchParams.get('search')
+
+    const where: Record<string, unknown> = {}
+
+    if (search) {
+      where.OR = [
+        { nama: { contains: search } },
+        { email: { contains: search } },
+        { noTelepon: { contains: search } },
+      ]
+    }
+
+    const users = await db.user.findMany({
+      where,
+      select: {
+        id: true,
+        nama: true,
+        email: true,
+        role: true,
+        fotoProfil: true,
+        noKTP: true,
+        noSIM: true,
+        noTelepon: true,
+        alamat: true,
+        verified: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    return NextResponse.json({ success: true, data: users })
+  } catch (error) {
+    console.error('Get users error:', error)
+    return NextResponse.json(
+      { success: false, error: 'Gagal mengambil data pengguna' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const session = await getSession()
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Anda harus login terlebih dahulu' },
+        { status: 401 }
+      )
+    }
+
+    const body = await request.json()
+    const { id, nama, noTelepon, alamat, noKTP, noSIM, fotoProfil, fotoKTP, fotoSIM, verified } = body
+
+    // Users can only update their own profile unless admin
+    const targetUserId = id || session.user.id
+    if (targetUserId !== session.user.id && session.user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { success: false, error: 'Anda tidak memiliki akses untuk mengubah profil ini' },
+        { status: 403 }
+      )
+    }
+
+    const updateData: Record<string, unknown> = {}
+    if (nama !== undefined) updateData.nama = nama
+    if (noTelepon !== undefined) updateData.noTelepon = noTelepon
+    if (alamat !== undefined) updateData.alamat = alamat
+    if (noKTP !== undefined) updateData.noKTP = noKTP
+    if (noSIM !== undefined) updateData.noSIM = noSIM
+    if (fotoProfil !== undefined) updateData.fotoProfil = fotoProfil
+    if (fotoKTP !== undefined) updateData.fotoKTP = fotoKTP
+    if (fotoSIM !== undefined) updateData.fotoSIM = fotoSIM
+    if (verified !== undefined && session.user.role === 'ADMIN') updateData.verified = verified
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Tidak ada data yang diperbarui' },
+        { status: 400 }
+      )
+    }
+
+    const user = await db.user.update({
+      where: { id: targetUserId },
+      data: updateData,
+      select: {
+        id: true,
+        nama: true,
+        email: true,
+        role: true,
+        fotoProfil: true,
+        noKTP: true,
+        noSIM: true,
+        fotoKTP: true,
+        fotoSIM: true,
+        alamat: true,
+        noTelepon: true,
+        verified: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    })
+
+    return NextResponse.json({
+      success: true,
+      data: user,
+      message: 'Profil berhasil diperbarui',
+    })
+  } catch (error) {
+    console.error('Update user error:', error)
+    return NextResponse.json(
+      { success: false, error: 'Gagal memperbarui profil' },
+      { status: 500 }
+    )
+  }
+}
