@@ -410,7 +410,20 @@ export default function VehicleManagementScreen() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="hargaSewa">Harga Sewa (per hari)</Label>
-              <Input id="hargaSewa" type="number" value={form.hargaSewa} onChange={(e) => setForm({ ...form, hargaSewa: parseInt(e.target.value) || 0 })} />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">Rp</span>
+                <Input
+                  id="hargaSewa"
+                  type="text"
+                  inputMode="numeric"
+                  value={form.hargaSewa ? form.hargaSewa.toLocaleString('id-ID') : ''}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/\./g, '')
+                    setForm({ ...form, hargaSewa: parseInt(raw) || 0 })
+                  }}
+                  className="pl-10"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="kategori">Kategori</Label>
