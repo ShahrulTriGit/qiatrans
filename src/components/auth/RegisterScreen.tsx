@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
-import { signIn } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -70,20 +69,11 @@ export default function RegisterScreen() {
         return
       }
 
-      toast.success('Registrasi berhasil!')
+      toast.success('Registrasi berhasil! Silakan login')
 
-      // Auto-login after registration
-      const result = await signIn('credentials', {
-        email: form.email,
-        password: form.password,
-        redirect: false,
-      })
-
-      if (result?.ok) {
-        setCustomerPage('home')
-      } else {
+      setTimeout(() => {
         setAuthPage('login')
-      }
+      }, 1500)
     } catch {
       toast.error('Terjadi kesalahan')
     } finally {
