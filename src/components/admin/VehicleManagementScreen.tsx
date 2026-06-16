@@ -62,7 +62,7 @@ const emptyForm = {
   warna: '',
   platNomor: '',
   hargaSewa: 0,
-  kategori: 'Sedan' as Vehicle['kategori'],
+  kategori: 'City Car' as Vehicle['kategori'],
   transmisi: 'Automatic' as Vehicle['transmisi'],
   bahanBakar: 'Bensin' as Vehicle['bahanBakar'],
   kapasitas: 5,
@@ -242,11 +242,9 @@ export default function VehicleManagementScreen() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Semua Kategori</SelectItem>
-            <SelectItem value="SUV">SUV</SelectItem>
-            <SelectItem value="Sedan">Sedan</SelectItem>
-            <SelectItem value="MPV">MPV</SelectItem>
-            <SelectItem value="Hatchback">Hatchback</SelectItem>
-            <SelectItem value="Pickup">Pickup</SelectItem>
+            <SelectItem value="City Car">City Car</SelectItem>
+            <SelectItem value="MPV (Multi Purpose Vehicle)">MPV (Multi Purpose Vehicle)</SelectItem>
+            <SelectItem value="Van/Minibus">Van/Minibus</SelectItem>
           </SelectContent>
         </Select>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -430,11 +428,9 @@ export default function VehicleManagementScreen() {
               <Select value={form.kategori} onValueChange={(v) => setForm({ ...form, kategori: v as Vehicle['kategori'] })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="SUV">SUV</SelectItem>
-                  <SelectItem value="Sedan">Sedan</SelectItem>
-                  <SelectItem value="MPV">MPV</SelectItem>
-                  <SelectItem value="Hatchback">Hatchback</SelectItem>
-                  <SelectItem value="Pickup">Pickup</SelectItem>
+                  <SelectItem value="City Car">City Car</SelectItem>
+                  <SelectItem value="MPV (Multi Purpose Vehicle)">MPV (Multi Purpose Vehicle)</SelectItem>
+                  <SelectItem value="Van/Minibus">Van/Minibus</SelectItem>
                 </SelectContent>
               </Select>
             </div>

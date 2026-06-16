@@ -81,7 +81,7 @@ export default function MyRentalsScreen() {
           if (rental.status === 'PENDING') {
             setCustomerPage('my-rentals', { rentalId: rental.id })
           } else if (rental.status === 'ACTIVE') {
-            setCustomerPage('inspection-before', { rentalId: rental.id })
+            setCustomerPage('inspection-before', { rentalId: rental.id, vehicleId: rental.vehicleId })
           } else if (rental.status === 'COMPLETED') {
             setCustomerPage('rental-history', { rentalId: rental.id })
           }
@@ -119,7 +119,7 @@ export default function MyRentalsScreen() {
                 className="flex-1 rounded-xl text-xs"
                 onClick={(e) => {
                   e.stopPropagation()
-                  setCustomerPage('inspection-before', { rentalId: rental.id })
+                  setCustomerPage('inspection-before', { rentalId: rental.id, vehicleId: rental.vehicleId })
                 }}
               >
                 <ClipboardCheck className="w-3.5 h-3.5 mr-1.5" />
@@ -131,7 +131,7 @@ export default function MyRentalsScreen() {
                 className="flex-1 rounded-xl text-xs"
                 onClick={(e) => {
                   e.stopPropagation()
-                  setCustomerPage('inspection-after', { rentalId: rental.id })
+                  setCustomerPage('inspection-after', { rentalId: rental.id, vehicleId: rental.vehicleId })
                 }}
               >
                 <ClipboardCheck className="w-3.5 h-3.5 mr-1.5" />

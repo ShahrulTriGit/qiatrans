@@ -11,7 +11,7 @@ import type { Vehicle } from '@/types'
 
 type SortOption = 'terbaru' | 'harga-terendah' | 'harga-tertinggi'
 
-const filterChips = ['All', 'SUV', 'Sedan', 'MPV', 'Hatchback', 'Pickup'] as const
+const filterChips = ['All', 'City Car', 'MPV (Multi Purpose Vehicle)', 'Van/Minibus'] as const
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price)

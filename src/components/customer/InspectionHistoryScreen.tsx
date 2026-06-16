@@ -167,7 +167,7 @@ export default function InspectionHistoryScreen() {
       const res = await fetch(`/api/inspections?userId=${session?.user?.id}`)
       const data = await res.json()
 
-      if (data.success && data.data && Array.isArray(data.data) && data.data.length > 0) {
+      if (data.success && data.data && Array.isArray(data.data)) {
         setInspections(data.data)
       } else {
         setInspections(MOCK_INSPECTIONS)

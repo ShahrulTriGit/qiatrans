@@ -6,11 +6,24 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const rentalId = searchParams.get('rentalId')
     const jenisInspeksi = searchParams.get('jenisInspeksi')
+    const userId = searchParams.get('userId')
 
-    const where: Record<string, unknown> = {}
+    let where: Record<string, unknown> = {}
 
     if (rentalId) where.rentalId = rentalId
     if (jenisInspeksi) where.jenisInspeksi = jenisInspeksi
+
+    if (userId) {
+      const userRentals = (await db.rental.findMany({
+        where: { userId },
+      })) as Record<string, unknown>[]
+      const rentalIds = (userRentals || []).map((r) => r.id as string)
+      if (rentalIds.length > 0) {
+        where.rentalId = { in: rentalIds }
+      } else {
+        return NextResponse.json({ success: true, data: [] })
+      }
+    }
 
     const inspections = await db.inspection.findMany({
       where,

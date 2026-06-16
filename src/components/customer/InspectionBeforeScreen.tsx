@@ -139,6 +139,7 @@ export default function InspectionBeforeScreen() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           rentalId: selectedRentalId,
+          vehicleId: selectedVehicleId,
           jenisInspeksi: 'SEBELUM_RENTAL',
           gambar: imageUrl,
         }),
@@ -154,7 +155,7 @@ export default function InspectionBeforeScreen() {
         inspection = {
           id: `mock-insp-${Date.now()}`,
           rentalId: selectedRentalId || '',
-          vehicleId: '',
+          vehicleId: selectedVehicleId || '',
           jenisInspeksi: 'SEBELUM_RENTAL',
           tanggal: new Date().toISOString(),
           status: 'PENDING',
@@ -173,25 +174,6 @@ export default function InspectionBeforeScreen() {
 
       // Step 2: Run detection (simulated YOLOv8)
       const mockResults = generateMockDetections(imageUrl)
-
-      try {
-        await fetch('/api/detections', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            inspectionId: inspection.id,
-            gambarAsli: imageUrl,
-            gambarHasil: imageUrl,
-            detections: mockResults.map((d) => ({
-              lokasiLecet: d.lokasiLecet,
-              confidence: d.confidence,
-              severity: d.severity,
-            })),
-          }),
-        })
-      } catch {
-        // Detection API may not exist yet
-      }
 
       const updatedResults = mockResults.map((d) => ({
         ...d,

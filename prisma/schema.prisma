@@ -39,7 +39,7 @@ model Vehicle {
   warna         String
   platNomor     String
   hargaSewa     Int
-  kategori      String   // SUV | Sedan | MPV | Hatchback | Pickup
+  kategori      String   // City Car | MPV (Multi Purpose Vehicle) | Van/Minibus
   transmisi     String   // Manual | Automatic
   bahanBakar    String   // Bensin | Diesel | Hybrid | Listrik
   kapasitas     Int
