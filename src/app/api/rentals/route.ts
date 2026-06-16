@@ -14,10 +14,15 @@ export async function GET(request: NextRequest) {
     if (vehicleId) where.vehicleId = vehicleId
     if (status) where.status = status
 
-    const rentals = await db.rental.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-    })
+    let rentals
+    try {
+      rentals = await db.rental.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+      })
+    } catch {
+      rentals = await db.rental.findMany({ where })
+    }
 
     const rentalsWithRelations = await Promise.all(
       rentals.map(async (rental) => {
