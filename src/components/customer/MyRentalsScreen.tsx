@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState, useMemo } from 'react'
-import { ArrowLeft, Car, Star } from 'lucide-react'
+import { ArrowLeft, Car, Star, CheckCircle2, BarChart3 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -46,12 +46,36 @@ export default function MyRentalsScreen() {
   const { data: session } = useSession()
   const [rentals, setRentals] = useState<Rental[]>([])
   const [loading, setLoading] = useState(true)
+  const [evaluatedSus, setEvaluatedSus] = useState<Set<string>>(new Set())
+  const [evaluatedUeq, setEvaluatedUeq] = useState<Set<string>>(new Set())
 
-  const fetchRentals = useCallback(async () => {
+  const fetchData = useCallback(async () => {
+    if (!session?.user?.id) return
     try {
-      const res = await fetch(`/api/rentals?userId=${session?.user?.id}`)
-      const data = await res.json()
-      if (data.success) setRentals(data.data || [])
+      const [rentalRes, susRes, ueqRes] = await Promise.all([
+        fetch(`/api/rentals?userId=${session.user.id}`),
+        fetch(`/api/sus?userId=${session.user.id}`),
+        fetch(`/api/ueq?userId=${session.user.id}`),
+      ])
+
+      if (rentalRes.ok) {
+        const data = await rentalRes.json()
+        if (data.success) setRentals(data.data || [])
+      }
+
+      if (susRes.ok) {
+        const susData = await susRes.json()
+        if (susData.data) {
+          setEvaluatedSus(new Set(susData.data.map((s: Record<string, string>) => s.rentalId)))
+        }
+      }
+
+      if (ueqRes.ok) {
+        const ueqData = await ueqRes.json()
+        if (ueqData.data) {
+          setEvaluatedUeq(new Set(ueqData.data.map((u: Record<string, string>) => u.rentalId)))
+        }
+      }
     } catch {
       // silently fail
     } finally {
@@ -60,8 +84,8 @@ export default function MyRentalsScreen() {
   }, [session?.user?.id])
 
   useEffect(() => {
-    if (session?.user?.id) fetchRentals()
-  }, [session?.user?.id, fetchRentals])
+    fetchData()
+  }, [fetchData])
 
   const activeRentals = useMemo(
     () => rentals.filter((r) => r.status === 'ACTIVE'),
@@ -112,19 +136,41 @@ export default function MyRentalsScreen() {
 
 
           {rental.status === 'COMPLETED' && (
-            <div className="mt-3 pt-3 border-t">
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-full rounded-xl text-xs"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setCustomerPage('sus-feedback', { rentalId: rental.id })
-                }}
-              >
-                <Star className="w-3.5 h-3.5 mr-1.5" />
-                Isi Evaluasi
-              </Button>
+            <div className="mt-3 pt-3 border-t space-y-2">
+              {!evaluatedSus.has(rental.id) && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full rounded-xl text-xs"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setCustomerPage('sus-feedback', { rentalId: rental.id })
+                  }}
+                >
+                  <Star className="w-3.5 h-3.5 mr-1.5" />
+                  Isi Evaluasi SUS
+                </Button>
+              )}
+              {!evaluatedUeq.has(rental.id) && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full rounded-xl text-xs"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setCustomerPage('ueq-feedback', { rentalId: rental.id })
+                  }}
+                >
+                  <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
+                  Isi Evaluasi UEQ
+                </Button>
+              )}
+              {evaluatedSus.has(rental.id) && evaluatedUeq.has(rental.id) && (
+                <div className="flex items-center justify-center gap-1.5 text-xs text-success">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Evaluasi selesai
+                </div>
+              )}
             </div>
           )}
         </CardContent>

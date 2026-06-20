@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useNavStore } from '@/stores/navStore'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -111,6 +111,29 @@ export default function UEQFeedbackScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [scaleResults, setScaleResults] = useState<Record<string, number> | null>(null)
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false)
+  const [checking, setChecking] = useState(true)
+
+  useEffect(() => {
+    async function checkExisting() {
+      if (!selectedRentalId || !session?.user?.id) {
+        setChecking(false)
+        return
+      }
+      try {
+        const res = await fetch(`/api/ueq?rentalId=${selectedRentalId}&userId=${session.user.id}`)
+        const data = await res.json()
+        if (data.success && data.data?.length > 0) {
+          setAlreadySubmitted(true)
+        }
+      } catch {
+        // ignore
+      } finally {
+        setChecking(false)
+      }
+    }
+    checkExisting()
+  }, [selectedRentalId, session?.user?.id])
 
   const answeredCount = answers.filter((a) => a > 0).length
   const progressPercent = (answeredCount / 23) * 100
@@ -232,8 +255,24 @@ export default function UEQFeedbackScreen() {
           </CardContent>
         </Card>
 
-        {/* Submitted Results */}
-        {submitted && scaleResults ? (
+        {/* Already submitted */}
+        {checking ? (
+          <Card>
+            <CardContent className="p-6 text-center text-muted-foreground text-sm">
+              Memeriksa status evaluasi...
+            </CardContent>
+          </Card>
+        ) : alreadySubmitted ? (
+          <Card className="border-success/30">
+            <CardContent className="p-6 text-center space-y-3">
+              <CheckCircle2 className="size-12 text-success mx-auto" />
+              <p className="font-semibold">Anda sudah mengisi evaluasi UEQ untuk rental ini</p>
+              <Button className="w-full mt-2" onClick={goBack}>
+                Kembali
+              </Button>
+            </CardContent>
+          </Card>
+        ) : submitted && scaleResults ? (
           <>
             <Card className="border-primary/30">
               <CardHeader className="pb-2 text-center">

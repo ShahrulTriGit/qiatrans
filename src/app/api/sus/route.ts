@@ -60,6 +60,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const existing = await db.sUSResult.findFirst({
+      where: { userId, rentalId },
+    })
+    if (existing) {
+      return NextResponse.json(
+        { success: false, error: 'Anda sudah mengisi evaluasi SUS untuk rental ini' },
+        { status: 409 }
+      )
+    }
+
     // Calculate SUS score
     // Odd items (q1, q3, q5, q7, q9) contribute positively: score = value - 1
     // Even items (q2, q4, q6, q8, q10) contribute negatively: score = 5 - value
