@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useNavStore } from '@/stores/navStore'
+import { useAppStore } from '@/stores/appStore'
 import type { Vehicle } from '@/types'
 
 type SortOption = 'terbaru' | 'harga-terendah' | 'harga-tertinggi'
@@ -18,12 +19,17 @@ const formatPrice = (price: number) =>
 
 export default function VehicleListScreen() {
   const { goBack, setCustomerPage } = useNavStore()
+  const { filterKategori, setFilterKategori } = useAppStore()
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [activeFilter, setActiveFilter] = useState<string>('All')
+  const [activeFilter, setActiveFilter] = useState<string>(() => filterKategori || 'All')
   const [sortOption, setSortOption] = useState<SortOption>('terbaru')
   const [showSort, setShowSort] = useState(false)
+
+  useEffect(() => {
+    setFilterKategori('')
+  }, [setFilterKategori])
 
   const fetchVehicles = useCallback(async () => {
     try {

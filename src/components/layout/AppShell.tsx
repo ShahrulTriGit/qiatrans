@@ -20,11 +20,7 @@ import VehicleDetailScreen from '@/components/customer/VehicleDetailScreen'
 import BookingScreen from '@/components/customer/BookingScreen'
 import MyRentalsScreen from '@/components/customer/MyRentalsScreen'
 import RentalHistoryScreen from '@/components/customer/RentalHistoryScreen'
-import InspectionBeforeScreen from '@/components/customer/InspectionBeforeScreen'
-import InspectionAfterScreen from '@/components/customer/InspectionAfterScreen'
-import DetectionResultScreen from '@/components/customer/DetectionResultScreen'
-import InspectionHistoryScreen from '@/components/customer/InspectionHistoryScreen'
-import DamageComparisonScreen from '@/components/customer/DamageComparisonScreen'
+
 import SUSFeedbackScreen from '@/components/customer/SUSFeedbackScreen'
 import UEQFeedbackScreen from '@/components/customer/UEQFeedbackScreen'
 import NotificationsScreen from '@/components/customer/NotificationsScreen'
@@ -36,11 +32,7 @@ import VehicleManagementScreen from '@/components/admin/VehicleManagementScreen'
 import CustomerManagementScreen from '@/components/admin/CustomerManagementScreen'
 import RentalManagementScreen from '@/components/admin/RentalManagementScreen'
 import RentalDetailScreen from '@/components/admin/RentalDetailScreen'
-import InspectionDataScreen from '@/components/admin/InspectionDataScreen'
-import DetectionDataScreen from '@/components/admin/DetectionDataScreen'
-import DamageVerificationScreen from '@/components/admin/DamageVerificationScreen'
 import RentalReportScreen from '@/components/admin/RentalReportScreen'
-import DamageReportScreen from '@/components/admin/DamageReportScreen'
 import SUSReportScreen from '@/components/admin/SUSReportScreen'
 import UEQReportScreen from '@/components/admin/UEQReportScreen'
 import SettingsScreen from '@/components/admin/SettingsScreen'
@@ -81,16 +73,6 @@ function CustomerRouter() {
       return <MyRentalsScreen />
     case 'rental-history':
       return <RentalHistoryScreen />
-    case 'inspection-before':
-      return <InspectionBeforeScreen />
-    case 'inspection-after':
-      return <InspectionAfterScreen />
-    case 'detection-result':
-      return <DetectionResultScreen />
-    case 'inspection-history':
-      return <InspectionHistoryScreen />
-    case 'damage-comparison':
-      return <DamageComparisonScreen />
     case 'sus-feedback':
       return <SUSFeedbackScreen />
     case 'ueq-feedback':
@@ -119,16 +101,8 @@ function AdminRouter() {
       return <RentalManagementScreen />
     case 'rental-detail':
       return <RentalDetailScreen />
-    case 'inspections':
-      return <InspectionDataScreen />
-    case 'detections':
-      return <DetectionDataScreen />
-    case 'damage-verification':
-      return <DamageVerificationScreen />
     case 'rental-report':
       return <RentalReportScreen />
-    case 'damage-report':
-      return <DamageReportScreen />
     case 'sus-report':
       return <SUSReportScreen />
     case 'ueq-report':

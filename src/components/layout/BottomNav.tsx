@@ -1,13 +1,12 @@
 'use client'
 
 import { useNavStore, type CustomerPage } from '@/stores/navStore'
-import { Home, Car, ClipboardList, Clock, User } from 'lucide-react'
+import { Home, Car, Clock, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems: { page: CustomerPage; label: string; icon: React.ElementType }[] = [
   { page: 'home', label: 'Beranda', icon: Home },
   { page: 'my-rentals', label: 'Rental', icon: Car },
-  { page: 'inspection-history', label: 'Inspeksi', icon: ClipboardList },
   { page: 'rental-history', label: 'Riwayat', icon: Clock },
   { page: 'profile', label: 'Profil', icon: User },
 ]
@@ -22,8 +21,6 @@ export default function BottomNav() {
           const Icon = item.icon
           const isActive = customerPage === item.page ||
             (item.page === 'home' && ['vehicle-list', 'vehicle-detail', 'booking', 'notifications'].includes(customerPage)) ||
-            (item.page === 'my-rentals' && ['inspection-before', 'inspection-after'].includes(customerPage)) ||
-            (item.page === 'inspection-history' && ['detection-result', 'inspection-history'].includes(customerPage)) ||
             (item.page === 'rental-history' && ['sus-feedback', 'ueq-feedback', 'rental-history'].includes(customerPage))
 
           return (

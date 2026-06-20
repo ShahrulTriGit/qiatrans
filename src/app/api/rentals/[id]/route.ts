@@ -21,19 +21,12 @@ export async function GET(
     const r = rental as Record<string, string>
     const user = await db.user.findUnique({ where: { id: r.userId } })
     const vehicle = await db.vehicle.findUnique({ where: { id: r.vehicleId } })
-    const inspections = await db.inspection.findMany({ where: { rentalId: id } })
-    const inspectionsWithDetections = await Promise.all(
-      (inspections || []).map(async (ins) => {
-        const dets = await db.detectionResult.findMany({ where: { inspectionId: (ins as Record<string, string>).id } })
-        return { ...ins, detections: dets || [] }
-      })
-    )
 
     const { password, ...userWithoutPassword } = (user as Record<string, unknown>) || {}
 
     return NextResponse.json({
       success: true,
-      data: { ...rental, user: userWithoutPassword, vehicle, inspections: inspectionsWithDetections },
+      data: { ...rental, user: userWithoutPassword, vehicle },
     })
   } catch (error) {
     console.error('Get rental error:', error)

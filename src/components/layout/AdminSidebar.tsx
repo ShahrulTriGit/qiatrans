@@ -7,10 +7,7 @@ import {
   Car,
   Users,
   ClipboardList,
-  Scan,
-  Shield,
   FileText,
-  AlertTriangle,
   BarChart3,
   Brain,
   Settings,
@@ -35,17 +32,13 @@ const menuItems: { page: AdminPage; label: string; icon: React.ElementType; grou
   { page: 'vehicles', label: 'Data Mobil', icon: Car, group: 'Manajemen' },
   { page: 'customers', label: 'Data Customer', icon: Users, group: 'Manajemen' },
   { page: 'rentals', label: 'Data Rental', icon: ClipboardList, group: 'Manajemen' },
-  { page: 'inspections', label: 'Data Inspeksi', icon: Scan, group: 'Inspeksi' },
-  { page: 'detections', label: 'Hasil Deteksi', icon: Shield, group: 'Inspeksi' },
-  { page: 'damage-verification', label: 'Verifikasi Kerusakan', icon: AlertTriangle, group: 'Inspeksi' },
   { page: 'rental-report', label: 'Laporan Rental', icon: FileText, group: 'Laporan' },
-  { page: 'damage-report', label: 'Laporan Kerusakan', icon: AlertTriangle, group: 'Laporan' },
   { page: 'sus-report', label: 'Laporan SUS', icon: BarChart3, group: 'Laporan' },
   { page: 'ueq-report', label: 'Laporan UEQ', icon: Brain, group: 'Laporan' },
   { page: 'settings', label: 'Pengaturan', icon: Settings, group: 'Lainnya' },
 ]
 
-const groups = ['Utama', 'Manajemen', 'Inspeksi', 'Laporan', 'Lainnya']
+const groups = ['Utama', 'Manajemen', 'Laporan', 'Lainnya']
 
 export default function AdminSidebar() {
   const { adminPage, setAdminPage } = useNavStore()

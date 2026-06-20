@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const isPasswordValid = await compare(currentPassword, user.password)
+    const isPasswordValid = await compare(currentPassword, (user as Record<string, unknown>).password as string)
     if (!isPasswordValid) {
       return NextResponse.json(
         { success: false, error: 'Password lama salah' },

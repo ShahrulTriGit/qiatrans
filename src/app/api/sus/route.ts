@@ -21,13 +21,13 @@ export async function GET(request: NextRequest) {
       (susResults || []).map(async (sus) => {
         const s = sus as Record<string, string>
         const user = await db.user.findUnique({ where: { id: s.userId } })
-        const rental = await db.rental.findUnique({ where: { id: s.rentalId } })
-        let vehicle = null
+        const rental: Record<string, unknown> | null = await db.rental.findUnique({ where: { id: s.rentalId } })
+        let vehicle: Record<string, unknown> | null = null
         if (rental) {
           vehicle = await db.vehicle.findUnique({ where: { id: (rental as Record<string, string>).vehicleId } })
         }
         const { password, ...userWithoutPassword } = (user as Record<string, unknown>) || {}
-        return { ...sus, user: userWithoutPassword, rental: rental ? { ...rental, vehicle } : null }
+        return { ...(sus as Record<string, unknown>), user: userWithoutPassword, rental: rental ? { ...(rental as Record<string, unknown>), vehicle } : null }
       })
     )
 
@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
     if (!userId || !rentalId || q1 === undefined || q2 === undefined || q3 === undefined ||
         q4 === undefined || q5 === undefined || q6 === undefined || q7 === undefined ||
         q8 === undefined || q9 === undefined || q10 === undefined) {
+      console.error('SUS POST validation failed:', { userId, rentalId, q1, q2, q3, q4, q5, q6, q7, q8, q9, q10 })
       return NextResponse.json(
         { success: false, error: 'Data SUS tidak lengkap' },
         { status: 400 }
@@ -90,8 +91,9 @@ export async function POST(request: NextRequest) {
     )
   } catch (error) {
     console.error('Create SUS result error:', error)
+    const message = error instanceof Error ? error.message : 'Gagal menyimpan hasil SUS'
     return NextResponse.json(
-      { success: false, error: 'Gagal menyimpan hasil SUS' },
+      { success: false, error: message },
       { status: 500 }
     )
   }

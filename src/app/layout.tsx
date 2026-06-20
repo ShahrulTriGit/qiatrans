@@ -15,17 +15,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "QiaTrans - Rental Mobil & Inspeksi Cerdas",
-  description: "Aplikasi rental mobil terintegrasi dengan teknologi Computer Vision untuk deteksi lecet pada body kendaraan menggunakan YOLOv8.",
-  keywords: ["QiaTrans", "Rental Mobil", "Computer Vision", "YOLOv8", "Inspeksi Kendaraan", "Deteksi Lecet"],
+  title: "QiaTrans - Rental Mobil",
+  description: "Aplikasi rental mobil terintegrasi.",
+  keywords: ["QiaTrans", "Rental Mobil"],
   authors: [{ name: "QiaTrans Team" }],
 };
 
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 export default function RootLayout({

@@ -66,7 +66,7 @@ function getScoreInterpretion(score: number): { label: string; color: string; de
 }
 
 export default function SUSFeedbackScreen() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const { selectedRentalId, goBack } = useNavStore()
 
   const [answers, setAnswers] = useState<number[]>(Array(10).fill(0))
@@ -89,6 +89,11 @@ export default function SUSFeedbackScreen() {
       return
     }
 
+    if (status !== 'authenticated' || !session?.user?.id) {
+      toast.error('Sesi tidak valid, silakan login ulang')
+      return
+    }
+
     setIsSubmitting(true)
     try {
       const score = calculateSUSScore(answers)
@@ -98,6 +103,7 @@ export default function SUSFeedbackScreen() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          userId: session?.user?.id,
           rentalId: selectedRentalId,
           q1: answers[0],
           q2: answers[1],
@@ -109,24 +115,18 @@ export default function SUSFeedbackScreen() {
           q8: answers[7],
           q9: answers[8],
           q10: answers[9],
-          skor: score,
         }),
       })
 
       const data = await res.json()
       if (data.success) {
+        setSubmitted(true)
         toast.success('Evaluasi SUS berhasil dikirim')
       } else {
-        toast.error('Gagal mengirim evaluasi SUS')
+        toast.error(data.error || 'Gagal mengirim evaluasi SUS')
       }
-
-      setSubmitted(true)
     } catch {
-      // Still show results even if API fails
-      const score = calculateSUSScore(answers)
-      setSusScore(score)
-      setSubmitted(true)
-      toast.error('Gagal mengirim evaluasi SUS')
+      toast.error('Gagal mengirim evaluasi SUS (network error)')
     } finally {
       setIsSubmitting(false)
     }

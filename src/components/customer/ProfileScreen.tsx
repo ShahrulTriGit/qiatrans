@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   ArrowLeft,
   User,
@@ -32,6 +32,8 @@ export default function ProfileScreen() {
   const { data: session } = useSession()
   const { theme, setTheme } = useTheme()
   const [editMode, setEditMode] = useState(false)
+  const [uploadingKtp, setUploadingKtp] = useState(false)
+  const [uploadingSim, setUploadingSim] = useState(false)
   const [form, setForm] = useState({
     nama: session?.user?.nama || '',
     email: session?.user?.email || '',
@@ -39,14 +41,19 @@ export default function ProfileScreen() {
     alamat: '',
     noKTP: '',
     noSIM: '',
+    fotoKTP: '',
+    fotoSIM: '',
   })
+  const ktpInputRef = useRef<HTMLInputElement>(null)
+  const simInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     async function fetchUser() {
       try {
         const res = await fetch('/api/user')
         if (res.ok) {
-          const data = await res.json()
+          const json = await res.json()
+          const data = json.data
           if (data) {
             setForm((prev) => ({
               ...prev,
@@ -56,6 +63,8 @@ export default function ProfileScreen() {
               alamat: data.alamat || '',
               noKTP: data.noKTP || '',
               noSIM: data.noSIM || '',
+              fotoKTP: data.fotoKTP || '',
+              fotoSIM: data.fotoSIM || '',
             }))
           }
         }
@@ -65,6 +74,53 @@ export default function ProfileScreen() {
     }
     fetchUser()
   }, [])
+
+  const handleUploadFile = async (file: File, type: 'ktp' | 'sim') => {
+    const setUploading = type === 'ktp' ? setUploadingKtp : setUploadingSim
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData })
+      const uploadData = await uploadRes.json()
+      if (!uploadData.success) {
+        toast.error(`Gagal mengupload ${type.toUpperCase()}`)
+        return
+      }
+      const url = uploadData.data.url
+
+      const saveRes = await fetch('/api/user', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [type === 'ktp' ? 'fotoKTP' : 'fotoSIM']: url }),
+      })
+      const saveData = await saveRes.json()
+      if (saveData.success !== false) {
+        setForm((prev) => ({
+          ...prev,
+          [type === 'ktp' ? 'fotoKTP' : 'fotoSIM']: url,
+        }))
+        toast.success(`${type.toUpperCase()} berhasil diupload`)
+      } else {
+        toast.error(saveData.message || 'Gagal menyimpan')
+      }
+    } catch {
+      toast.error(`Gagal mengupload ${type.toUpperCase()}`)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, type: 'ktp' | 'sim') => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      toast.error('File harus berupa gambar')
+      return
+    }
+    handleUploadFile(file, type)
+    e.target.value = ''
+  }
 
   const handleSave = async () => {
     try {
@@ -254,17 +310,47 @@ export default function ProfileScreen() {
         <Card className="border-0 shadow-md rounded-2xl">
           <CardContent className="p-5 space-y-3">
             <h3 className="text-sm font-semibold">Dokumen</h3>
+            <input
+              ref={ktpInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => handleFileSelect(e, 'ktp')}
+            />
+            <input
+              ref={simInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => handleFileSelect(e, 'sim')}
+            />
             <div className="grid grid-cols-2 gap-3">
-              <button className="flex flex-col items-center gap-2 p-4 border border-dashed rounded-xl hover:bg-muted/50 transition-colors">
-                <FileText className="w-6 h-6 text-muted-foreground" />
+              <button
+                onClick={() => ktpInputRef.current?.click()}
+                disabled={uploadingKtp}
+                className="flex flex-col items-center gap-2 p-4 border border-dashed rounded-xl hover:bg-muted/50 transition-colors disabled:opacity-50"
+              >
+                {form.fotoKTP ? (
+                  <img src={form.fotoKTP} alt="KTP" className="w-full h-20 object-cover rounded-lg" />
+                ) : (
+                  <FileText className="w-6 h-6 text-muted-foreground" />
+                )}
                 <span className="text-xs font-medium text-muted-foreground">
-                  Upload KTP
+                  {uploadingKtp ? 'Mengupload...' : form.fotoKTP ? 'Ganti KTP' : 'Upload KTP'}
                 </span>
               </button>
-              <button className="flex flex-col items-center gap-2 p-4 border border-dashed rounded-xl hover:bg-muted/50 transition-colors">
-                <FileText className="w-6 h-6 text-muted-foreground" />
+              <button
+                onClick={() => simInputRef.current?.click()}
+                disabled={uploadingSim}
+                className="flex flex-col items-center gap-2 p-4 border border-dashed rounded-xl hover:bg-muted/50 transition-colors disabled:opacity-50"
+              >
+                {form.fotoSIM ? (
+                  <img src={form.fotoSIM} alt="SIM" className="w-full h-20 object-cover rounded-lg" />
+                ) : (
+                  <FileText className="w-6 h-6 text-muted-foreground" />
+                )}
                 <span className="text-xs font-medium text-muted-foreground">
-                  Upload SIM
+                  {uploadingSim ? 'Mengupload...' : form.fotoSIM ? 'Ganti SIM' : 'Upload SIM'}
                 </span>
               </button>
             </div>

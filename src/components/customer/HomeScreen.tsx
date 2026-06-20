@@ -27,22 +27,18 @@ import { useAppStore } from '@/stores/appStore'
 import type { Vehicle } from '@/types'
 
 const categories = [
-  { key: 'SUV', label: 'SUV', icon: Truck, color: 'bg-blue-100 text-blue-700' },
-  { key: 'Sedan', label: 'Sedan', icon: CarFront, color: 'bg-emerald-100 text-emerald-700' },
-  { key: 'MPV', label: 'MPV', icon: Bus, color: 'bg-amber-100 text-amber-700' },
-  { key: 'Hatchback', label: 'Hatchback', icon: Car, color: 'bg-purple-100 text-purple-700' },
-  { key: 'Pickup', label: 'Pickup', icon: Gauge, color: 'bg-rose-100 text-rose-700' },
+  { key: 'City Car', label: 'City Car', icon: CarFront, color: 'bg-blue-100 text-blue-700' },
+  { key: 'MPV (Multi Purpose Vehicle)', label: 'MPV', icon: Bus, color: 'bg-amber-100 text-amber-700' },
+  { key: 'Van/Minibus', label: 'Van/Minibus', icon: Truck, color: 'bg-emerald-100 text-emerald-700' },
 ]
 
 const bannerGradients = [
   'from-qia-dark to-primary',
   'from-primary to-qia',
-  'from-qia to-emerald-700',
 ]
 
 const bannerTexts = [
   { title: 'Diskon 20% Rental Pertama!', subtitle: 'Gunakan kode QIATRANS20' },
-  { title: 'Inspeksi Gratis', subtitle: 'Setiap rental mendapat inspeksi digital' },
   { title: 'AI Scratch Detection', subtitle: 'Deteksi lecet otomatis dengan AI' },
 ]
 
@@ -51,7 +47,7 @@ const formatPrice = (price: number) =>
 
 export default function HomeScreen() {
   const { setCustomerPage } = useNavStore()
-  const { setSearchQuery } = useAppStore()
+  const { setSearchQuery, setFilterKategori } = useAppStore()
   const { data: session } = useSession()
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [loading, setLoading] = useState(true)
@@ -223,18 +219,19 @@ export default function HomeScreen() {
         </div>
       </div>
 
-      {/* Kategori */}
+        {/* Kategori */}
       <div className="mt-7 px-5">
         <h2 className="text-lg font-bold mb-3">Kategori</h2>
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {categories.map((cat) => {
             const Icon = cat.icon
             return (
               <button
                 key={cat.key}
-                onClick={() =>
+                onClick={() => {
+                  setFilterKategori(cat.key)
                   setCustomerPage('vehicle-list')
-                }
+                }}
                 className="flex flex-col items-center gap-1.5 py-3 rounded-xl hover:bg-muted/50 transition-colors"
               >
                 <div

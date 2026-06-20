@@ -25,37 +25,19 @@ const MOCK_NOTIFICATIONS: Notification[] = [
     id: 'notif-1',
     userId: 'user-1',
     title: 'Rental Dikonfirmasi',
-    message: 'Rental Toyota Avanza Anda telah dikonfirmasi. Silakan lakukan inspeksi sebelum rental.',
+    message: 'Rental Toyota Avanza Anda telah dikonfirmasi.',
     type: 'SUCCESS',
     read: false,
-    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 min ago
-  },
-  {
-    id: 'notif-2',
-    userId: 'user-1',
-    title: 'Deteksi Selesai',
-    message: 'Inspeksi kendaraan Anda telah selesai. 2 lecet terdeteksi pada kendaraan.',
-    type: 'INFO',
-    read: false,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
   },
   {
     id: 'notif-3',
     userId: 'user-1',
     title: 'Pengembalian Mendatang',
-    message: 'Rental Anda akan berakhir besok. Jangan lupa melakukan inspeksi setelah rental.',
+    message: 'Rental Anda akan berakhir besok. Silakan kembalikan tepat waktu.',
     type: 'WARNING',
     read: true,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
-  },
-  {
-    id: 'notif-4',
-    userId: 'user-1',
-    title: 'Kerusakan Baru Terdeteksi',
-    message: 'Perbandingan inspeksi menunjukkan 1 lecet baru setelah rental. Silakan periksa laporan.',
-    type: 'WARNING',
-    read: true,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(), // 2 days ago
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
   },
   {
     id: 'notif-5',
@@ -214,7 +196,7 @@ export default function NotificationsScreen() {
               <BellOff className="size-12 text-muted-foreground" />
               <p className="font-semibold text-muted-foreground">Belum ada notifikasi</p>
               <p className="text-xs text-muted-foreground text-center">
-                Notifikasi terkait rental dan inspeksi Anda akan muncul di sini
+                Notifikasi terkait rental Anda akan muncul di sini
               </p>
             </CardContent>
           </Card>

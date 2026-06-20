@@ -29,7 +29,8 @@ export default function RentalHistoryScreen() {
   const { data: session } = useSession()
   const [rentals, setRentals] = useState<Rental[]>([])
   const [loading, setLoading] = useState(true)
-  const [evaluatedRentals, setEvaluatedRentals] = useState<Set<string>>(new Set())
+  const [susEvaluated, setSusEvaluated] = useState<Set<string>>(new Set())
+  const [ueqEvaluated, setUeqEvaluated] = useState<Set<string>>(new Set())
 
   const fetchRentals = useCallback(async () => {
     try {
@@ -39,8 +40,9 @@ export default function RentalHistoryScreen() {
       const data = await res.json()
       if (data.success) setRentals(data.data || [])
 
-      // Fetch existing SUS and UEQ results to determine which rentals are already evaluated
-      const evaluatedIds = new Set<string>()
+      // Fetch existing SUS and UEQ results separately
+      const susIds = new Set<string>()
+      const ueqIds = new Set<string>()
       try {
         const [susRes, ueqRes] = await Promise.all([
           fetch('/api/sus?userId=' + session?.user?.id),
@@ -50,18 +52,19 @@ export default function RentalHistoryScreen() {
         const ueqData = await ueqRes.json()
         if (susData.success && Array.isArray(susData.data)) {
           susData.data.forEach((r: { rentalId?: string }) => {
-            if (r.rentalId) evaluatedIds.add(r.rentalId)
+            if (r.rentalId) susIds.add(r.rentalId)
           })
         }
         if (ueqData.success && Array.isArray(ueqData.data)) {
           ueqData.data.forEach((r: { rentalId?: string }) => {
-            if (r.rentalId) evaluatedIds.add(r.rentalId)
+            if (r.rentalId) ueqIds.add(r.rentalId)
           })
         }
       } catch {
-        // silently fail - will show evaluation buttons if can't confirm
+        // silently fail
       }
-      setEvaluatedRentals(evaluatedIds)
+      setSusEvaluated(susIds)
+      setUeqEvaluated(ueqIds)
     } catch {
       // silently fail
     } finally {
@@ -128,9 +131,8 @@ export default function RentalHistoryScreen() {
                   ? 'bg-muted text-muted-foreground'
                   : 'bg-info/10 text-info'
 
-            // For completed rentals, check if they need evaluation
-            // Only show evaluation buttons if the user hasn't already submitted feedback
-            const needsEvaluation = rental.status === 'COMPLETED' && !evaluatedRentals.has(rental.id)
+            const needsSus = rental.status === 'COMPLETED' && !susEvaluated.has(rental.id)
+            const needsUeq = rental.status === 'COMPLETED' && !ueqEvaluated.has(rental.id)
 
             return (
               <Card
@@ -166,34 +168,38 @@ export default function RentalHistoryScreen() {
                   </div>
 
                   {/* Evaluation Buttons for Completed Rentals */}
-                  {needsEvaluation && (
+                  {(needsSus || needsUeq) && (
                     <div className="mt-3 pt-3 border-t flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 rounded-xl text-xs"
-                        onClick={() =>
-                          setCustomerPage('sus-feedback', {
-                            rentalId: rental.id,
-                          })
-                        }
-                      >
-                        <Star className="w-3.5 h-3.5 mr-1.5" />
-                        Evaluasi SUS
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 rounded-xl text-xs"
-                        onClick={() =>
-                          setCustomerPage('ueq-feedback', {
-                            rentalId: rental.id,
-                          })
-                        }
-                      >
-                        <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
-                        Evaluasi UEQ
-                      </Button>
+                      {needsSus && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 rounded-xl text-xs"
+                          onClick={() =>
+                            setCustomerPage('sus-feedback', {
+                              rentalId: rental.id,
+                            })
+                          }
+                        >
+                          <Star className="w-3.5 h-3.5 mr-1.5" />
+                          Evaluasi SUS
+                        </Button>
+                      )}
+                      {needsUeq && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 rounded-xl text-xs"
+                          onClick={() =>
+                            setCustomerPage('ueq-feedback', {
+                              rentalId: rental.id,
+                            })
+                          }
+                        >
+                          <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
+                          Evaluasi UEQ
+                        </Button>
+                      )}
                     </div>
                   )}
                 </CardContent>

@@ -24,17 +24,18 @@ export const authOptions: NextAuthOptions = {
             const isAdmin = adminEmails.includes(email.toLowerCase())
             const role = isAdmin ? 'ADMIN' : 'CUSTOMER'
 
-            let user = await db.user.findFirst({ where: { email } })
+            let userRecord = await db.user.findFirst({ where: { email } }) as Record<string, unknown> | null
 
-            if (user) {
-              if (user.role !== role) {
+            if (userRecord) {
+              const u = userRecord as Record<string, unknown>
+              if (u.role !== role) {
                 await db.user.update({
-                  where: { id: user.id as string },
+                  where: { id: u.id as string },
                   data: { role },
                 })
               }
             } else {
-              user = await db.user.create({
+              userRecord = await db.user.create({
                 data: {
                   nama: name,
                   email,
@@ -49,15 +50,16 @@ export const authOptions: NextAuthOptions = {
                   fotoKTP: null,
                   fotoSIM: null,
                 },
-              })
+              }) as Record<string, unknown> | null
             }
 
+            const u = userRecord as Record<string, unknown>
             return {
-              id: user!.id as string,
-              email: user!.email as string,
-              nama: user!.nama as string,
-              name: user!.nama as string,
-              role: user!.role as 'CUSTOMER' | 'ADMIN',
+              id: u.id as string,
+              email: u.email as string,
+              nama: u.nama as string,
+              name: u.nama as string,
+              role: u.role as 'CUSTOMER' | 'ADMIN',
             }
           } catch {
             throw new Error('Token tidak valid')
@@ -68,26 +70,27 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Email dan password harus diisi')
         }
 
-        const user = await db.user.findFirst({
+        const userRecord = await db.user.findFirst({
           where: { email: credentials.email },
-        })
+        }) as Record<string, unknown> | null
 
-        if (!user) {
+        if (!userRecord) {
           throw new Error('Email tidak terdaftar')
         }
 
-        const isPasswordValid = await compare(credentials.password, user.password as string)
+        const u = userRecord as Record<string, unknown>
+        const isPasswordValid = await compare(credentials.password, u.password as string)
 
         if (!isPasswordValid) {
           throw new Error('Password salah')
         }
 
         return {
-          id: user.id as string,
-          email: user.email as string,
-          nama: user.nama as string,
-          name: user.nama as string,
-          role: user.role as 'CUSTOMER' | 'ADMIN',
+          id: u.id as string,
+          email: u.email as string,
+          nama: u.nama as string,
+          name: u.nama as string,
+          role: u.role as 'CUSTOMER' | 'ADMIN',
         }
       },
     }),

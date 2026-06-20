@@ -9,11 +9,6 @@ export type CustomerPage =
   | 'booking'
   | 'my-rentals'
   | 'rental-history'
-  | 'inspection-before'
-  | 'inspection-after'
-  | 'detection-result'
-  | 'inspection-history'
-  | 'damage-comparison'
   | 'sus-feedback'
   | 'ueq-feedback'
   | 'profile'
@@ -26,15 +21,22 @@ export type AdminPage =
   | 'customers'
   | 'rentals'
   | 'rental-detail'
-  | 'inspections'
-  | 'detections'
-  | 'damage-verification'
   | 'rental-report'
-  | 'damage-report'
   | 'sus-report'
   | 'ueq-report'
   | 'settings'
   | 'notifications'
+
+const MAX_HISTORY = 50
+
+interface HistoryEntry {
+  role: 'customer' | 'admin'
+  page: string
+  params: {
+    selectedVehicleId: string | null
+    selectedRentalId: string | null
+  }
+}
 
 interface NavigationState {
   authPage: AuthPage
@@ -42,9 +44,8 @@ interface NavigationState {
   adminPage: AdminPage
   selectedVehicleId: string | null
   selectedRentalId: string | null
-  selectedInspectionId: string | null
-  selectedDetectionId: string | null
-  navigationHistory: string[]
+
+  navigationHistory: HistoryEntry[]
   setAuthPage: (page: AuthPage) => void
   setCustomerPage: (page: CustomerPage, params?: Record<string, string>) => void
   setAdminPage: (page: AdminPage, params?: Record<string, string>) => void
@@ -58,42 +59,81 @@ export const useNavStore = create<NavigationState>((set, get) => ({
   adminPage: 'dashboard',
   selectedVehicleId: null,
   selectedRentalId: null,
-  selectedInspectionId: null,
-  selectedDetectionId: null,
   navigationHistory: [],
 
   setAuthPage: (page) => set({ authPage: page }),
 
   setCustomerPage: (page, params) =>
-    set((state) => ({
-      customerPage: page,
-      navigationHistory: [...state.navigationHistory, `customer:${state.customerPage}`],
-      selectedVehicleId: params?.vehicleId ?? state.selectedVehicleId,
-      selectedRentalId: params?.rentalId ?? state.selectedRentalId,
-      selectedInspectionId: params?.inspectionId ?? state.selectedInspectionId,
-      selectedDetectionId: params?.detectionId ?? state.selectedDetectionId,
-    })),
+    set((state) => {
+      const prevPage = `customer:${state.customerPage}`
+      const lastEntry = state.navigationHistory[state.navigationHistory.length - 1]
+      const lastPageStr = lastEntry ? `${lastEntry.role}:${lastEntry.page}` : ''
+      if (lastPageStr === prevPage) {
+        return {
+          customerPage: page,
+          selectedVehicleId: params?.vehicleId ?? state.selectedVehicleId,
+          selectedRentalId: params?.rentalId ?? state.selectedRentalId,
+        }
+      }
+      const entry: HistoryEntry = {
+        role: 'customer',
+        page: state.customerPage,
+        params: {
+          selectedVehicleId: state.selectedVehicleId,
+          selectedRentalId: state.selectedRentalId,
+        },
+      }
+      const history = [...state.navigationHistory, entry]
+      if (history.length > MAX_HISTORY) history.shift()
+      return {
+        customerPage: page,
+        navigationHistory: history,
+        selectedVehicleId: params?.vehicleId ?? state.selectedVehicleId,
+        selectedRentalId: params?.rentalId ?? state.selectedRentalId,
+      }
+    }),
 
   setAdminPage: (page, params) =>
-    set((state) => ({
-      adminPage: page,
-      navigationHistory: [...state.navigationHistory, `admin:${state.adminPage}`],
-      selectedVehicleId: params?.vehicleId ?? state.selectedVehicleId,
-      selectedRentalId: params?.rentalId ?? state.selectedRentalId,
-      selectedInspectionId: params?.inspectionId ?? state.selectedInspectionId,
-      selectedDetectionId: params?.detectionId ?? state.selectedDetectionId,
-    })),
+    set((state) => {
+      const prevPage = `admin:${state.adminPage}`
+      const lastEntry = state.navigationHistory[state.navigationHistory.length - 1]
+      const lastPageStr = lastEntry ? `${lastEntry.role}:${lastEntry.page}` : ''
+      if (lastPageStr === prevPage) {
+        return {
+          adminPage: page,
+          selectedVehicleId: params?.vehicleId ?? state.selectedVehicleId,
+          selectedRentalId: params?.rentalId ?? state.selectedRentalId,
+        }
+      }
+      const entry: HistoryEntry = {
+        role: 'admin',
+        page: state.adminPage,
+        params: {
+          selectedVehicleId: state.selectedVehicleId,
+          selectedRentalId: state.selectedRentalId,
+        },
+      }
+      const history = [...state.navigationHistory, entry]
+      if (history.length > MAX_HISTORY) history.shift()
+      return {
+        adminPage: page,
+        navigationHistory: history,
+        selectedVehicleId: params?.vehicleId ?? state.selectedVehicleId,
+        selectedRentalId: params?.rentalId ?? state.selectedRentalId,
+      }
+    }),
 
   goBack: () => {
     const { navigationHistory } = get()
     if (navigationHistory.length > 0) {
       const last = navigationHistory[navigationHistory.length - 1]
-      const [role, page] = last.split(':')
       set((state) => ({
         navigationHistory: state.navigationHistory.slice(0, -1),
-        ...(role === 'customer'
-          ? { customerPage: page as CustomerPage }
-          : { adminPage: page as AdminPage }),
+        ...(last.role === 'customer'
+          ? { customerPage: last.page as CustomerPage }
+          : { adminPage: last.page as AdminPage }),
+        selectedVehicleId: last.params.selectedVehicleId,
+        selectedRentalId: last.params.selectedRentalId,
       }))
     }
   },
@@ -105,8 +145,6 @@ export const useNavStore = create<NavigationState>((set, get) => ({
       adminPage: 'dashboard',
       selectedVehicleId: null,
       selectedRentalId: null,
-      selectedInspectionId: null,
-      selectedDetectionId: null,
       navigationHistory: [],
     }),
 }))

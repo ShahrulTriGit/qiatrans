@@ -29,7 +29,7 @@ export default function SplashScreen() {
             QiaTrans
           </h1>
           <p className="text-white/70 text-base font-light tracking-wide">
-            Rental Mobil & Inspeksi Cerdas
+            Rental Mobil Cerdas
           </p>
         </div>
       </div>

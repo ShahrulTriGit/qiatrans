@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState, useMemo } from 'react'
-import { ArrowLeft, Car, ClipboardCheck, Star } from 'lucide-react'
+import { ArrowLeft, Car, Star } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -81,7 +81,7 @@ export default function MyRentalsScreen() {
           if (rental.status === 'PENDING') {
             setCustomerPage('my-rentals', { rentalId: rental.id })
           } else if (rental.status === 'ACTIVE') {
-            setCustomerPage('inspection-before', { rentalId: rental.id, vehicleId: rental.vehicleId })
+            setCustomerPage('my-rentals', { rentalId: rental.id })
           } else if (rental.status === 'COMPLETED') {
             setCustomerPage('rental-history', { rentalId: rental.id })
           }
@@ -110,35 +110,7 @@ export default function MyRentalsScreen() {
             </div>
           </div>
 
-          {/* Action Buttons */}
-          {rental.status === 'ACTIVE' && (
-            <div className="mt-3 pt-3 border-t flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                className="flex-1 rounded-xl text-xs"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setCustomerPage('inspection-before', { rentalId: rental.id, vehicleId: rental.vehicleId })
-                }}
-              >
-                <ClipboardCheck className="w-3.5 h-3.5 mr-1.5" />
-                Inspeksi Sebelum Rental
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="flex-1 rounded-xl text-xs"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setCustomerPage('inspection-after', { rentalId: rental.id, vehicleId: rental.vehicleId })
-                }}
-              >
-                <ClipboardCheck className="w-3.5 h-3.5 mr-1.5" />
-                Inspeksi Setelah Rental
-              </Button>
-            </div>
-          )}
+
           {rental.status === 'COMPLETED' && (
             <div className="mt-3 pt-3 border-t">
               <Button

@@ -59,42 +59,6 @@ export interface Rental {
   vehicle?: Vehicle;
 }
 
-// Inspection Types
-export type InspectionJenis = 'SEBELUM_RENTAL' | 'SESUDAH_RENTAL';
-export type InspectionStatus = 'PENDING' | 'COMPLETED' | 'VERIFIED';
-
-export interface Inspection {
-  id: string;
-  rentalId: string;
-  vehicleId: string;
-  jenisInspeksi: InspectionJenis;
-  tanggal: string;
-  status: InspectionStatus;
-  catatan?: string | null;
-  createdAt: string;
-  updatedAt: string;
-  rental?: Rental;
-  vehicle?: Vehicle;
-  detections?: DetectionResult[];
-}
-
-// Detection Result Types
-export type DetectionSeverity = 'RINGAN' | 'SEDANG' | 'BERAT';
-
-export interface DetectionResult {
-  id: string;
-  inspectionId: string;
-  lokasiLecet: string;
-  confidence: number;
-  gambarAsli: string;
-  gambarHasil: string;
-  severity: DetectionSeverity;
-  verified: boolean;
-  verifiedBy?: string | null;
-  createdAt: string;
-  inspection?: Inspection;
-}
-
 // SUS Result Types
 export interface SUSResult {
   id: string;

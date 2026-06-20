@@ -26,7 +26,7 @@ export async function GET() {
     ])
 
     const totalRevenue = (revenueRentals || []).reduce(
-      (sum: number, r: Record<string, unknown>) => sum + (Number(r.totalHarga) || 0),
+      (sum: number, r) => sum + (Number((r as Record<string, unknown>).totalHarga) || 0),
       0
     )
 

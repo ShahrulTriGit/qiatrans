@@ -104,7 +104,7 @@ function getScaleLabel(value: number): string {
 }
 
 export default function UEQFeedbackScreen() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const { selectedRentalId, goBack } = useNavStore()
 
   const [answers, setAnswers] = useState<number[]>(Array(23).fill(0))
@@ -127,6 +127,11 @@ export default function UEQFeedbackScreen() {
       return
     }
 
+    if (status !== 'authenticated' || !session?.user?.id) {
+      toast.error('Sesi tidak valid, silakan login ulang')
+      return
+    }
+
     setIsSubmitting(true)
     try {
       const scales = calculateUEQScales(answers)
@@ -136,6 +141,7 @@ export default function UEQFeedbackScreen() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          userId: session?.user?.id,
           rentalId: selectedRentalId,
           q1: answers[0],
           q2: answers[1],
@@ -171,17 +177,13 @@ export default function UEQFeedbackScreen() {
 
       const data = await res.json()
       if (data.success) {
+        setSubmitted(true)
         toast.success('Evaluasi UEQ berhasil dikirim')
       } else {
-        toast.error('Gagal mengirim evaluasi UEQ')
+        toast.error(data.error || 'Gagal mengirim evaluasi UEQ')
       }
-
-      setSubmitted(true)
     } catch {
-      const scales = calculateUEQScales(answers)
-      setScaleResults(scales)
-      setSubmitted(true)
-      toast.error('Gagal mengirim evaluasi UEQ')
+      toast.error('Gagal mengirim evaluasi UEQ (network error)')
     } finally {
       setIsSubmitting(false)
     }

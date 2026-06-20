@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Return user without password
-    const { password: _, ...userWithoutPassword } = user
+    const { password: _, ...userWithoutPassword } = user as Record<string, unknown>
 
     return NextResponse.json(
       { success: true, data: userWithoutPassword, message: 'Registrasi berhasil' },

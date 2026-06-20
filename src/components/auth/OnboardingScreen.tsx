@@ -14,13 +14,6 @@ const steps = [
     gradient: 'from-qia-dark to-primary',
   },
   {
-    icon: Camera,
-    title: 'Inspeksi Digital',
-    description:
-      'Lakukan inspeksi kendaraan secara digital sebelum dan sesudah rental. Dokumentasi lengkap dan terstruktur.',
-    gradient: 'from-primary to-qia',
-  },
-  {
     icon: ScanLine,
     title: 'Deteksi Lecet AI',
     description:

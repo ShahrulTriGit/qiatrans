@@ -21,13 +21,13 @@ export async function GET(request: NextRequest) {
       (ueqResults || []).map(async (ueq) => {
         const u = ueq as Record<string, string>
         const user = await db.user.findUnique({ where: { id: u.userId } })
-        const rental = await db.rental.findUnique({ where: { id: u.rentalId } })
-        let vehicle = null
+        const rental: Record<string, unknown> | null = await db.rental.findUnique({ where: { id: u.rentalId } })
+        let vehicle: Record<string, unknown> | null = null
         if (rental) {
           vehicle = await db.vehicle.findUnique({ where: { id: (rental as Record<string, string>).vehicleId } })
         }
         const { password, ...userWithoutPassword } = (user as Record<string, unknown>) || {}
-        return { ...ueq, user: userWithoutPassword, rental: rental ? { ...rental, vehicle } : null }
+        return { ...(ueq as Record<string, unknown>), user: userWithoutPassword, rental: rental ? { ...(rental as Record<string, unknown>), vehicle } : null }
       })
     )
 
@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
     } = body
 
     if (!userId || !rentalId) {
+      console.error('UEQ POST validation failed: missing userId or rentalId', { userId, rentalId })
       return NextResponse.json(
         { success: false, error: 'User ID dan Rental ID harus diisi' },
         { status: 400 }
@@ -62,6 +63,7 @@ export async function POST(request: NextRequest) {
     // Check all questions are provided
     const questions = [q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14, q15, q16, q17, q18, q19, q20, q21, q22, q23]
     if (questions.some(q => q === undefined || q === null)) {
+      console.error('UEQ POST validation failed: missing questions', questions.map((q, i) => `q${i + 1}=${q}`).filter(s => s.includes('=undefined')).join(', '))
       return NextResponse.json(
         { success: false, error: 'Semua pertanyaan UEQ harus diisi' },
         { status: 400 }
@@ -170,8 +172,9 @@ export async function POST(request: NextRequest) {
     )
   } catch (error) {
     console.error('Create UEQ result error:', error)
+    const message = error instanceof Error ? error.message : 'Gagal menyimpan hasil UEQ'
     return NextResponse.json(
-      { success: false, error: 'Gagal menyimpan hasil UEQ' },
+      { success: false, error: message },
       { status: 500 }
     )
   }
