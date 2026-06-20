@@ -25,44 +25,50 @@ const formatDate = (dateStr: string) => {
 }
 
 export default function RentalHistoryScreen() {
-  const { goBack, setCustomerPage } = useNavStore()
+  const { goBack, setCustomerPage, customerPage } = useNavStore()
   const { data: session } = useSession()
   const [rentals, setRentals] = useState<Rental[]>([])
   const [loading, setLoading] = useState(true)
   const [susEvaluated, setSusEvaluated] = useState<Set<string>>(new Set())
   const [ueqEvaluated, setUeqEvaluated] = useState<Set<string>>(new Set())
 
-  const fetchRentals = useCallback(async () => {
-    try {
-      const res = await fetch(
-        `/api/rentals?userId=${session?.user?.id}&status=COMPLETED`
-      )
-      const data = await res.json()
-      if (data.success) setRentals(data.data || [])
 
-      // Fetch existing SUS and UEQ results separately
+  const fetchRentals = useCallback(async () => {
+    if (!session?.user?.id) return
+    setLoading(true)
+    try {
+      const [rentalRes, susRes, ueqRes] = await Promise.all([
+        fetch(`/api/rentals?userId=${session.user.id}&status=COMPLETED`),
+        fetch(`/api/sus?userId=${session.user.id}`),
+        fetch(`/api/ueq?userId=${session.user.id}`),
+      ])
+
+      if (rentalRes.ok) {
+        const data = await rentalRes.json()
+        if (data.success) setRentals(data.data || [])
+      }
+
       const susIds = new Set<string>()
       const ueqIds = new Set<string>()
-      try {
-        const [susRes, ueqRes] = await Promise.all([
-          fetch('/api/sus?userId=' + session?.user?.id),
-          fetch('/api/ueq?userId=' + session?.user?.id),
-        ])
+
+      if (susRes.ok) {
         const susData = await susRes.json()
-        const ueqData = await ueqRes.json()
         if (susData.success && Array.isArray(susData.data)) {
           susData.data.forEach((r: { rentalId?: string }) => {
             if (r.rentalId) susIds.add(r.rentalId)
           })
         }
+      }
+
+      if (ueqRes.ok) {
+        const ueqData = await ueqRes.json()
         if (ueqData.success && Array.isArray(ueqData.data)) {
           ueqData.data.forEach((r: { rentalId?: string }) => {
             if (r.rentalId) ueqIds.add(r.rentalId)
           })
         }
-      } catch {
-        // silently fail
       }
+
       setSusEvaluated(susIds)
       setUeqEvaluated(ueqIds)
     } catch {
@@ -74,7 +80,7 @@ export default function RentalHistoryScreen() {
 
   useEffect(() => {
     if (session?.user?.id) fetchRentals()
-  }, [session?.user?.id, fetchRentals])
+  }, [session?.user?.id, fetchRentals, customerPage])
 
   return (
     <div className="min-h-screen bg-background pb-8">

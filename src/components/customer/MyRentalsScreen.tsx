@@ -42,7 +42,7 @@ const EmptyStateComponent = ({ message }: { message: string }) => (
 )
 
 export default function MyRentalsScreen() {
-  const { goBack, setCustomerPage, selectedRentalId } = useNavStore()
+  const { goBack, setCustomerPage, selectedRentalId, customerPage } = useNavStore()
   const { data: session } = useSession()
   const [rentals, setRentals] = useState<Rental[]>([])
   const [loading, setLoading] = useState(true)
@@ -85,7 +85,7 @@ export default function MyRentalsScreen() {
 
   useEffect(() => {
     fetchData()
-  }, [fetchData])
+  }, [fetchData, customerPage])
 
   const activeRentals = useMemo(
     () => rentals.filter((r) => r.status === 'ACTIVE'),
