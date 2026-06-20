@@ -14,6 +14,7 @@ import {
   Sun,
   FileText,
   Info,
+  AlertTriangle,
 } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
 import { useTheme } from 'next-themes'
@@ -160,6 +161,7 @@ export default function ProfileScreen() {
     toast.success('Berhasil keluar')
   }
 
+  const missingDocs = !form.fotoKTP || !form.fotoSIM
   const userInitial = session?.user?.nama
     ? session.user.nama.charAt(0).toUpperCase()
     : 'U'
@@ -212,6 +214,26 @@ export default function ProfileScreen() {
       </div>
 
       <div className="px-5 pt-6 space-y-4">
+        {/* Document Warning */}
+        {missingDocs && (
+          <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
+            <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+              <AlertTriangle className="w-5 h-5 text-amber-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-amber-800">Lengkapi Dokumen</p>
+              <p className="text-xs text-amber-700 mt-0.5">
+                Upload KTP dan SIM sebelum melakukan pemesanan mobil.
+                {!form.fotoKTP && !form.fotoSIM
+                  ? ' KTP dan SIM belum diupload.'
+                  : !form.fotoKTP
+                    ? ' KTP belum diupload.'
+                    : ' SIM belum diupload.'}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Avatar Section */}
         <div className="flex flex-col items-center py-4">
           <div className="relative">

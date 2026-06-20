@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState, useMemo } from 'react'
-import { ArrowLeft, Car, CalendarDays, StickyNote } from 'lucide-react'
+import { ArrowLeft, Car, CalendarDays, StickyNote, AlertTriangle } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,7 +22,7 @@ const formatPrice = (price: number) =>
 
 export default function BookingScreen() {
   const { goBack, setCustomerPage, selectedVehicleId } = useNavStore()
-  const { data: session } = useSession()
+  const { data: session, update } = useSession()
   const [vehicle, setVehicle] = useState<Vehicle | null>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -31,6 +31,24 @@ export default function BookingScreen() {
   const [catatan, setCatatan] = useState('')
   const [openStart, setOpenStart] = useState(false)
   const [openEnd, setOpenEnd] = useState(false)
+  const [missingDocs, setMissingDocs] = useState(false)
+
+  const checkDocuments = useCallback(async () => {
+    try {
+      const res = await fetch('/api/user')
+      if (res.ok) {
+        const json = await res.json()
+        const data = json.data
+        if (data) {
+          const hasKtp = !!data.fotoKTP
+          const hasSim = !!data.fotoSIM
+          setMissingDocs(!hasKtp || !hasSim)
+        }
+      }
+    } catch {
+      // silently fail
+    }
+  }, [])
 
   const fetchVehicle = useCallback(async () => {
     try {
@@ -52,8 +70,11 @@ export default function BookingScreen() {
   }, [selectedVehicleId])
 
   useEffect(() => {
-    if (selectedVehicleId) fetchVehicle()
-  }, [selectedVehicleId, fetchVehicle])
+    if (selectedVehicleId) {
+      checkDocuments()
+      fetchVehicle()
+    }
+  }, [selectedVehicleId, fetchVehicle, checkDocuments])
 
   const days = useMemo(() => {
     if (!tanggalSewa || !tanggalKembali) return 0
@@ -82,6 +103,12 @@ export default function BookingScreen() {
     }
     if (!session?.user?.id) {
       toast.error('Sesi tidak valid, silakan login ulang')
+      return
+    }
+    if (missingDocs) {
+      toast.error('Lengkapi dokumen terlebih dahulu', {
+        description: 'Upload KTP dan SIM di halaman Profil sebelum melakukan booking.',
+      })
       return
     }
     if (vehicle && vehicle.status !== 'TERSEDIA') {
@@ -148,6 +175,29 @@ export default function BookingScreen() {
       </div>
 
       <div className="px-5 pt-4 space-y-4">
+        {/* Document Warning */}
+        {missingDocs && (
+          <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
+            <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+              <AlertTriangle className="w-5 h-5 text-amber-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-amber-800">Dokumen Belum Lengkap</p>
+              <p className="text-xs text-amber-700 mt-0.5">
+                Anda harus upload KTP dan SIM di halaman Profil sebelum bisa melakukan booking.
+              </p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-2 h-8 px-3 text-xs text-amber-700 hover:text-amber-800 hover:bg-amber-100"
+                onClick={() => setCustomerPage('profile')}
+              >
+                Ke Halaman Profil
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Vehicle Info */}
         {vehicle && (
           <Card className="border-0 shadow-md rounded-2xl">
