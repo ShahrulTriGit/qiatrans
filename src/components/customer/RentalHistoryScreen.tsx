@@ -167,41 +167,57 @@ export default function RentalHistoryScreen() {
                     </div>
                   </div>
 
-                  {/* Evaluation Buttons for Completed Rentals */}
-                  {(needsSus || needsUeq) && (
-                    <div className="mt-3 pt-3 border-t flex gap-2">
-                      {needsSus && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 rounded-xl text-xs"
-                          onClick={() =>
-                            setCustomerPage('sus-feedback', {
-                              rentalId: rental.id,
-                            })
-                          }
-                        >
-                          <Star className="w-3.5 h-3.5 mr-1.5" />
-                          Evaluasi SUS
-                        </Button>
-                      )}
-                      {needsUeq && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 rounded-xl text-xs"
-                          onClick={() =>
-                            setCustomerPage('ueq-feedback', {
-                              rentalId: rental.id,
-                            })
-                          }
-                        >
-                          <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
-                          Evaluasi UEQ
-                        </Button>
-                      )}
+                  {/* Evaluation Status */}
+                  <div className="mt-3 pt-3 border-t space-y-2">
+                    <div className="flex gap-2">
+                      <Badge
+                        variant="outline"
+                        className={`text-xs ${!susEvaluated.has(rental.id) ? 'bg-warning/10 text-warning border-warning/20' : 'bg-success/10 text-success border-success/20'}`}
+                      >
+                        SUS {susEvaluated.has(rental.id) ? '✓' : '—'}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className={`text-xs ${!ueqEvaluated.has(rental.id) ? 'bg-warning/10 text-warning border-warning/20' : 'bg-success/10 text-success border-success/20'}`}
+                      >
+                        UEQ {ueqEvaluated.has(rental.id) ? '✓' : '—'}
+                      </Badge>
                     </div>
-                  )}
+                    {(needsSus || needsUeq) && (
+                      <div className="flex gap-2">
+                        {needsSus && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 rounded-xl text-xs"
+                            onClick={() =>
+                              setCustomerPage('sus-feedback', {
+                                rentalId: rental.id,
+                              })
+                            }
+                          >
+                            <Star className="w-3.5 h-3.5 mr-1.5" />
+                            Evaluasi SUS
+                          </Button>
+                        )}
+                        {needsUeq && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 rounded-xl text-xs"
+                            onClick={() =>
+                              setCustomerPage('ueq-feedback', {
+                                rentalId: rental.id,
+                              })
+                            }
+                          >
+                            <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
+                            Evaluasi UEQ
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             )
