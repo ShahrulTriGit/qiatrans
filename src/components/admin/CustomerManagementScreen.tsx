@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { Search, Users, ShieldCheck, ShieldX, Mail, Phone, Loader2, FileText, IdCard } from 'lucide-react'
+import { Search, Users, ShieldCheck, ShieldX, Mail, Phone, Loader2, FileText, IdCard, AlertTriangle } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -221,9 +221,11 @@ export default function CustomerManagementScreen() {
                             <DropdownMenuContent align="start">
                               <DropdownMenuItem onClick={() => { setDocTarget(customer); setDocType('KTP') }}>
                                 <IdCard className="w-4 h-4 mr-2" /> KTP
+                                {!customer.fotoKTP && <AlertTriangle className="w-3.5 h-3.5 ml-auto text-warning" />}
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => { setDocTarget(customer); setDocType('SIM') }}>
                                 <IdCard className="w-4 h-4 mr-2" /> SIM
+                                {!customer.fotoSIM && <AlertTriangle className="w-3.5 h-3.5 ml-auto text-warning" />}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -284,9 +286,11 @@ export default function CustomerManagementScreen() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => { setDocTarget(customer); setDocType('KTP') }}>
                             <IdCard className="w-4 h-4 mr-2" /> KTP
+                            {!customer.fotoKTP && <AlertTriangle className="w-3.5 h-3.5 ml-auto text-warning" />}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => { setDocTarget(customer); setDocType('SIM') }}>
                             <IdCard className="w-4 h-4 mr-2" /> SIM
+                            {!customer.fotoSIM && <AlertTriangle className="w-3.5 h-3.5 ml-auto text-warning" />}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
