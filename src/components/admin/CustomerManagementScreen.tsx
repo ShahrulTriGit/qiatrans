@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { Search, Users, ShieldCheck, ShieldX, Mail, Phone, Loader2 } from 'lucide-react'
+import { Search, Users, ShieldCheck, ShieldX, Mail, Phone, Loader2, FileText, IdCard } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,6 +26,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import type { User, Rental } from '@/types'
 
 export default function CustomerManagementScreen() {
@@ -35,6 +47,8 @@ export default function CustomerManagementScreen() {
   const [search, setSearch] = useState('')
   const [verifyTarget, setVerifyTarget] = useState<User | null>(null)
   const [toggling, setToggling] = useState(false)
+  const [docTarget, setDocTarget] = useState<User | null>(null)
+  const [docType, setDocType] = useState<'KTP' | 'SIM' | null>(null)
 
   const fetchCustomers = useCallback(async () => {
     try {
@@ -160,7 +174,7 @@ export default function CustomerManagementScreen() {
                     <TableHead>Customer</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>No. Telepon</TableHead>
-                    <TableHead>Verified</TableHead>
+                    <TableHead>Dokumen</TableHead>
                     <TableHead className="text-right">Jumlah Rental</TableHead>
                     <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
@@ -198,15 +212,21 @@ export default function CustomerManagementScreen() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          {customer.verified ? (
-                            <Badge className="bg-success/10 text-success border-success/20" variant="outline">
-                              <ShieldCheck className="w-3 h-3 mr-1" /> Verified
-                            </Badge>
-                          ) : (
-                            <Badge className="bg-warning/10 text-warning border-warning/20" variant="outline">
-                              <ShieldX className="w-3 h-3 mr-1" /> Unverified
-                            </Badge>
-                          )}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button size="sm" variant="outline">
+                                <FileText className="w-3.5 h-3.5 mr-1" /> Dokumen
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start">
+                              <DropdownMenuItem onClick={() => { setDocTarget(customer); setDocType('KTP') }}>
+                                <IdCard className="w-4 h-4 mr-2" /> KTP
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => { setDocTarget(customer); setDocType('SIM') }}>
+                                <IdCard className="w-4 h-4 mr-2" /> SIM
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                         <TableCell className="text-right font-medium">
                           {rentalCounts[customer.id] ?? 0}
@@ -255,15 +275,21 @@ export default function CustomerManagementScreen() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
                       <h3 className="font-semibold text-sm">{customer.nama}</h3>
-                      {customer.verified ? (
-                        <Badge className="bg-success/10 text-success border-success/20" variant="outline">
-                          <ShieldCheck className="w-3 h-3 mr-1" /> Verified
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-warning/10 text-warning border-warning/20" variant="outline">
-                          <ShieldX className="w-3 h-3 mr-1" /> Unverified
-                        </Badge>
-                      )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button size="sm" variant="outline">
+                            <FileText className="w-3.5 h-3.5 mr-1" /> Dokumen
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => { setDocTarget(customer); setDocType('KTP') }}>
+                            <IdCard className="w-4 h-4 mr-2" /> KTP
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => { setDocTarget(customer); setDocType('SIM') }}>
+                            <IdCard className="w-4 h-4 mr-2" /> SIM
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
                       <Mail className="w-3 h-3" /> {customer.email}
@@ -319,6 +345,37 @@ export default function CustomerManagementScreen() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Dokumen Dialog */}
+      <Dialog open={!!docTarget && !!docType} onOpenChange={(open) => { if (!open) { setDocTarget(null); setDocType(null) } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {docType === 'KTP' ? 'KTP' : 'SIM'} - {docTarget?.nama}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex justify-center">
+            {docTarget && docType === 'KTP' && docTarget.fotoKTP ? (
+              <img
+                src={docTarget.fotoKTP}
+                alt="KTP"
+                className="max-h-[60vh] rounded-lg object-contain"
+              />
+            ) : docTarget && docType === 'SIM' && docTarget.fotoSIM ? (
+              <img
+                src={docTarget.fotoSIM}
+                alt="SIM"
+                className="max-h-[60vh] rounded-lg object-contain"
+              />
+            ) : (
+              <div className="text-muted-foreground text-center py-8">
+                <IdCard className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p>Belum upload {docType === 'KTP' ? 'KTP' : 'SIM'}</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
