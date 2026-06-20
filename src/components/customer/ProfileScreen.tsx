@@ -35,6 +35,7 @@ export default function ProfileScreen() {
   const [editMode, setEditMode] = useState(false)
   const [uploadingKtp, setUploadingKtp] = useState(false)
   const [uploadingSim, setUploadingSim] = useState(false)
+  const [uploadingProfil, setUploadingProfil] = useState(false)
   const [form, setForm] = useState({
     nama: session?.user?.nama || '',
     email: session?.user?.email || '',
@@ -44,9 +45,11 @@ export default function ProfileScreen() {
     noSIM: '',
     fotoKTP: '',
     fotoSIM: '',
+    fotoProfil: '',
   })
   const ktpInputRef = useRef<HTMLInputElement>(null)
   const simInputRef = useRef<HTMLInputElement>(null)
+  const profilInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     async function fetchUser() {
@@ -66,6 +69,7 @@ export default function ProfileScreen() {
               noSIM: data.noSIM || '',
               fotoKTP: data.fotoKTP || '',
               fotoSIM: data.fotoSIM || '',
+              fotoProfil: data.fotoProfil || '',
             }))
           }
         }
@@ -120,6 +124,49 @@ export default function ProfileScreen() {
       return
     }
     handleUploadFile(file, type)
+    e.target.value = ''
+  }
+
+  const handleUploadProfil = async (file: File) => {
+    setUploadingProfil(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData })
+      const uploadData = await uploadRes.json()
+      if (!uploadData.success) {
+        toast.error('Gagal mengupload foto profil')
+        return
+      }
+      const url = uploadData.data.url
+
+      const saveRes = await fetch('/api/user', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fotoProfil: url }),
+      })
+      const saveData = await saveRes.json()
+      if (saveData.success !== false) {
+        setForm((prev) => ({ ...prev, fotoProfil: url }))
+        toast.success('Foto profil berhasil diupload')
+      } else {
+        toast.error(saveData.message || 'Gagal menyimpan')
+      }
+    } catch {
+      toast.error('Gagal mengupload foto profil')
+    } finally {
+      setUploadingProfil(false)
+    }
+  }
+
+  const handleProfilFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      toast.error('File harus berupa gambar')
+      return
+    }
+    handleUploadProfil(file)
     e.target.value = ''
   }
 
@@ -238,12 +285,20 @@ export default function ProfileScreen() {
         <div className="flex flex-col items-center py-4">
           <div className="relative">
             <Avatar className="w-24 h-24 border-4 border-primary/20">
-              <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-bold">
-                {userInitial}
-              </AvatarFallback>
+              {form.fotoProfil ? (
+                <img src={form.fotoProfil} alt="Foto Profil" className="w-full h-full object-cover" />
+              ) : (
+                <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-bold">
+                  {userInitial}
+                </AvatarFallback>
+              )}
             </Avatar>
             {editMode && (
-              <button className="absolute bottom-0 right-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-lg hover:bg-primary/90 transition-colors">
+              <button
+                onClick={() => profilInputRef.current?.click()}
+                disabled={uploadingProfil}
+                className="absolute bottom-0 right-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+              >
                 <Camera className="w-4 h-4" />
               </button>
             )}
@@ -332,6 +387,13 @@ export default function ProfileScreen() {
         <Card className="border-0 shadow-md rounded-2xl">
           <CardContent className="p-5 space-y-3">
             <h3 className="text-sm font-semibold">Dokumen</h3>
+            <input
+              ref={profilInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleProfilFileSelect}
+            />
             <input
               ref={ktpInputRef}
               type="file"
