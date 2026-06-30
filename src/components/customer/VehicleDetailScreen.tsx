@@ -122,7 +122,7 @@ export default function VehicleDetailScreen() {
               <span className="text-2xl font-bold text-primary">
                 {formatPrice(vehicle.hargaSewa)}
               </span>
-              <span className="text-sm text-muted-foreground">/hari</span>
+              <span className="text-sm text-muted-foreground">/24 jam</span>
             </div>
 
             <Separator className="my-4" />

@@ -213,7 +213,7 @@ export default function BookingScreen() {
                 <p className="text-sm font-bold text-primary mt-1">
                   {formatPrice(vehicle.hargaSewa)}
                   <span className="text-xs font-normal text-muted-foreground">
-                    /hari
+                    /24 jam
                   </span>
                 </p>
               </div>
@@ -317,7 +317,7 @@ export default function BookingScreen() {
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">
-                  {formatPrice(vehicle?.hargaSewa || 0)} x {days} hari
+                  {formatPrice(vehicle?.hargaSewa || 0)} x {days} 24 jam
                 </span>
                 <span>{formatPrice(totalPrice)}</span>
               </div>

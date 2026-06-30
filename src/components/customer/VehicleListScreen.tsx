@@ -228,7 +228,7 @@ export default function VehicleListScreen() {
                   <p className="text-sm font-bold text-primary mt-2">
                     {formatPrice(v.hargaSewa)}
                     <span className="text-xs font-normal text-muted-foreground">
-                      /hari
+                      /24 jam
                     </span>
                   </p>
                 </CardContent>

@@ -299,7 +299,7 @@ export default function VehicleManagementScreen() {
                         <TableCell className="font-medium">{vehicle.namaMobil}</TableCell>
                         <TableCell>{vehicle.merk}</TableCell>
                         <TableCell className="font-mono text-sm">{vehicle.platNomor}</TableCell>
-                        <TableCell>{formatCurrency(vehicle.hargaSewa)}/hari</TableCell>
+                        <TableCell>{formatCurrency(vehicle.hargaSewa)}/24 jam</TableCell>
                         <TableCell>
                           <Badge className={getStatusColor(vehicle.status)} variant="outline">
                             {vehicle.status}
@@ -355,7 +355,7 @@ export default function VehicleManagementScreen() {
                         {vehicle.status}
                       </Badge>
                     </div>
-                    <p className="text-sm font-bold text-primary mt-1">{formatCurrency(vehicle.hargaSewa)}/hari</p>
+                    <p className="text-sm font-bold text-primary mt-1">{formatCurrency(vehicle.hargaSewa)}/24 jam</p>
                     <div className="flex gap-1 mt-2">
                       <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => openEditForm(vehicle)}>
                         <Edit className="w-3 h-3 mr-1" /> Edit
@@ -407,7 +407,7 @@ export default function VehicleManagementScreen() {
               <Input id="platNomor" value={form.platNomor} onChange={(e) => setForm({ ...form, platNomor: e.target.value })} placeholder="B 1234 ABC" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="hargaSewa">Harga Sewa (per hari)</Label>
+              <Label htmlFor="hargaSewa">Harga Sewa (per 24 jam)</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">Rp</span>
                 <Input
