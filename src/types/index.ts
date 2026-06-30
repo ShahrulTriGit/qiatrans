@@ -49,6 +49,8 @@ export interface Rental {
   vehicleId: string;
   tanggalSewa: string;
   tanggalKembali: string;
+  jamAmbil?: string | null;
+  jamKembali?: string | null;
   tanggalPengembalian?: string | null;
   status: RentalStatus;
   totalHarga: number;

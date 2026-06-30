@@ -58,6 +58,8 @@ model Rental {
   vehicleId       String
   tanggalSewa     DateTime
   tanggalKembali  DateTime
+  jamAmbil        String?
+  jamKembali      String?
   tanggalPengembalian DateTime?
   status          String   @default("PENDING") // PENDING | ACTIVE | COMPLETED | CANCELLED
   totalHarga      Int

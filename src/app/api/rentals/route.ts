@@ -61,6 +61,8 @@ export async function POST(request: NextRequest) {
       vehicleId,
       tanggalSewa,
       tanggalKembali,
+      jamAmbil,
+      jamKembali,
       totalHarga,
       catatan,
     } = body
@@ -78,6 +80,8 @@ export async function POST(request: NextRequest) {
         vehicleId,
         tanggalSewa: new Date(tanggalSewa).toISOString(),
         tanggalKembali: new Date(tanggalKembali).toISOString(),
+        jamAmbil: jamAmbil || null,
+        jamKembali: jamKembali || null,
         totalHarga: Number(totalHarga),
         catatan: catatan || null,
         status: 'PENDING',

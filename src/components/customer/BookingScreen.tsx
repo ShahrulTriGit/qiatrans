@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState, useMemo } from 'react'
-import { ArrowLeft, Car, CalendarDays, StickyNote, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Car, CalendarDays, Clock, StickyNote, AlertTriangle } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,6 +28,8 @@ export default function BookingScreen() {
   const [submitting, setSubmitting] = useState(false)
   const [tanggalSewa, setTanggalSewa] = useState<Date>()
   const [tanggalKembali, setTanggalKembali] = useState<Date>()
+  const [jamAmbil, setJamAmbil] = useState('08:00')
+  const [jamKembali, setJamKembali] = useState('08:00')
   const [catatan, setCatatan] = useState('')
   const [openStart, setOpenStart] = useState(false)
   const [openEnd, setOpenEnd] = useState(false)
@@ -128,6 +130,8 @@ export default function BookingScreen() {
           vehicleId: selectedVehicleId,
           tanggalSewa: tanggalSewa.toISOString(),
           tanggalKembali: tanggalKembali.toISOString(),
+          jamAmbil,
+          jamKembali,
           catatan: catatan || null,
           totalHarga: totalPrice,
         }),
@@ -258,6 +262,15 @@ export default function BookingScreen() {
                   />
                 </PopoverContent>
               </Popover>
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
+                <Input
+                  type="time"
+                  value={jamAmbil}
+                  onChange={(e) => setJamAmbil(e.target.value)}
+                  className="rounded-xl h-11"
+                />
+              </div>
             </div>
 
             {/* Tanggal Kembali */}
@@ -290,6 +303,15 @@ export default function BookingScreen() {
                   />
                 </PopoverContent>
               </Popover>
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
+                <Input
+                  type="time"
+                  value={jamKembali}
+                  onChange={(e) => setJamKembali(e.target.value)}
+                  className="rounded-xl h-11"
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
