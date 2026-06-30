@@ -128,8 +128,8 @@ export default function RentalManagementScreen() {
     >
       <TableCell className="font-medium">{rental.user?.nama || '-'}</TableCell>
       <TableCell>{rental.vehicle?.namaMobil || '-'}</TableCell>
-      <TableCell>{formatDate(rental.tanggalSewa)}</TableCell>
-      <TableCell>{formatDate(rental.tanggalKembali)}</TableCell>
+      <TableCell>{formatDate(rental.tanggalSewa)} {rental.jamAmbil || ''}</TableCell>
+      <TableCell>{formatDate(rental.tanggalKembali)} {rental.jamKembali || ''}</TableCell>
       <TableCell>{getStatusBadge(rental.status)}</TableCell>
       <TableCell className="text-right">{formatCurrency(rental.totalHarga)}</TableCell>
       <TableCell className="text-right">
@@ -180,8 +180,8 @@ export default function RentalManagementScreen() {
           {getStatusBadge(rental.status)}
         </div>
         <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mb-3">
-          <div>Sewa: {formatDate(rental.tanggalSewa)}</div>
-          <div>Kembali: {formatDate(rental.tanggalKembali)}</div>
+          <div>Sewa: {formatDate(rental.tanggalSewa)} {rental.jamAmbil || ''}</div>
+          <div>Kembali: {formatDate(rental.tanggalKembali)} {rental.jamKembali || ''}</div>
         </div>
         <div className="flex items-center justify-between">
           <span className="font-bold text-sm text-primary">{formatCurrency(rental.totalHarga)}</span>

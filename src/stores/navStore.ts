@@ -8,6 +8,7 @@ export type CustomerPage =
   | 'vehicle-detail'
   | 'booking'
   | 'my-rentals'
+  | 'rental-detail'
   | 'rental-history'
   | 'sus-feedback'
   | 'ueq-feedback'

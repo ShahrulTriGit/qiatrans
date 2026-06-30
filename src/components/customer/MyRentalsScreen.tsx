@@ -102,13 +102,7 @@ export default function MyRentalsScreen() {
       <Card
         className="border-0 shadow-md rounded-2xl cursor-pointer hover:shadow-lg transition-shadow"
         onClick={() => {
-          if (rental.status === 'PENDING') {
-            setCustomerPage('my-rentals', { rentalId: rental.id })
-          } else if (rental.status === 'ACTIVE') {
-            setCustomerPage('my-rentals', { rentalId: rental.id })
-          } else if (rental.status === 'COMPLETED') {
-            setCustomerPage('rental-history', { rentalId: rental.id })
-          }
+          setCustomerPage('rental-detail', { rentalId: rental.id })
         }}
       >
         <CardContent className="p-4">
@@ -126,7 +120,7 @@ export default function MyRentalsScreen() {
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {formatDate(rental.tanggalSewa)} - {formatDate(rental.tanggalKembali)}
+                {formatDate(rental.tanggalSewa)} {rental.jamAmbil} - {formatDate(rental.tanggalKembali)} {rental.jamKembali}
               </p>
               <p className="text-sm font-bold text-primary mt-1.5">
                 {formatPrice(rental.totalHarga)}

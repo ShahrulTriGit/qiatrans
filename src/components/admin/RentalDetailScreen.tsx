@@ -194,10 +194,12 @@ export default function RentalDetailScreen() {
             <div>
               <p className="text-sm text-muted-foreground">Tanggal Sewa</p>
               <p className="font-semibold">{formatDate(rental.tanggalSewa)}</p>
+              {rental.jamAmbil && <p className="text-sm text-muted-foreground">{rental.jamAmbil}</p>}
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Tanggal Kembali</p>
               <p className="font-semibold">{formatDate(rental.tanggalKembali)}</p>
+              {rental.jamKembali && <p className="text-sm text-muted-foreground">{rental.jamKembali}</p>}
             </div>
           </div>
           {rental.tanggalPengembalian && (

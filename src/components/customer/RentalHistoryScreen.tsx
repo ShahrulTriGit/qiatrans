@@ -164,8 +164,8 @@ export default function RentalHistoryScreen() {
                         {rental.vehicle?.tahun}
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {formatDate(rental.tanggalSewa)} -{' '}
-                        {formatDate(rental.tanggalKembali)}
+                        {formatDate(rental.tanggalSewa)} {rental.jamAmbil} -{' '}
+                        {formatDate(rental.tanggalKembali)} {rental.jamKembali}
                       </p>
                       <p className="text-sm font-bold text-primary mt-1">
                         {formatPrice(rental.totalHarga)}

@@ -19,6 +19,7 @@ import VehicleListScreen from '@/components/customer/VehicleListScreen'
 import VehicleDetailScreen from '@/components/customer/VehicleDetailScreen'
 import BookingScreen from '@/components/customer/BookingScreen'
 import MyRentalsScreen from '@/components/customer/MyRentalsScreen'
+import CustomerRentalDetailScreen from '@/components/customer/RentalDetailScreen'
 import RentalHistoryScreen from '@/components/customer/RentalHistoryScreen'
 
 import SUSFeedbackScreen from '@/components/customer/SUSFeedbackScreen'
@@ -71,6 +72,8 @@ function CustomerRouter() {
       return <BookingScreen />
     case 'my-rentals':
       return <MyRentalsScreen />
+    case 'rental-detail':
+      return <CustomerRentalDetailScreen />
     case 'rental-history':
       return <RentalHistoryScreen />
     case 'sus-feedback':
