@@ -11,6 +11,7 @@ import {
   BarChart3,
   Brain,
   Settings,
+  Shield,
   LogOut,
 } from 'lucide-react'
 import { signOut } from 'next-auth/react'
@@ -35,6 +36,7 @@ const menuItems: { page: AdminPage; label: string; icon: React.ElementType; grou
   { page: 'rental-report', label: 'Laporan Rental', icon: FileText, group: 'Laporan' },
   { page: 'sus-report', label: 'Laporan SUS', icon: BarChart3, group: 'Laporan' },
   { page: 'ueq-report', label: 'Laporan UEQ', icon: Brain, group: 'Laporan' },
+  { page: 'access-management', label: 'Kelola Hak Akses', icon: Shield, group: 'Lainnya' },
   { page: 'settings', label: 'Pengaturan', icon: Settings, group: 'Lainnya' },
 ]
 
@@ -66,6 +68,7 @@ export default function AdminSidebar() {
               <SidebarMenu>
                 {menuItems
                   .filter((item) => item.group === group)
+                  .filter((item) => item.page !== 'access-management' || session?.user?.role === 'SUPER_ADMIN')
                   .map((item) => {
                     const Icon = item.icon
                     const isActive = adminPage === item.page

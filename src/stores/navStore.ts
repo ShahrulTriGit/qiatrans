@@ -25,6 +25,7 @@ export type AdminPage =
   | 'rental-report'
   | 'sus-report'
   | 'ueq-report'
+  | 'access-management'
   | 'settings'
   | 'notifications'
 

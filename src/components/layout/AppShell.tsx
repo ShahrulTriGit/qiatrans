@@ -38,6 +38,7 @@ import SUSReportScreen from '@/components/admin/SUSReportScreen'
 import UEQReportScreen from '@/components/admin/UEQReportScreen'
 import SettingsScreen from '@/components/admin/SettingsScreen'
 import AdminNotificationsScreen from '@/components/admin/NotificationsScreen'
+import AccessManagementScreen from '@/components/admin/AccessManagementScreen'
 
 function AuthRouter() {
   const { authPage } = useNavStore()
@@ -110,6 +111,8 @@ function AdminRouter() {
       return <SUSReportScreen />
     case 'ueq-report':
       return <UEQReportScreen />
+    case 'access-management':
+      return <AccessManagementScreen />
     case 'settings':
       return <SettingsScreen />
     case 'notifications':
