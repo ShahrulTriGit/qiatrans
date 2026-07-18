@@ -25,6 +25,12 @@ const formatDate = (dateStr: string) => {
   }
 }
 
+const formatTime = (time?: string | null) => {
+  if (!time) return ''
+  const [h, m] = time.split(':')
+  return `${h}.${m}`
+}
+
 const statusConfig: Record<RentalStatus, { label: string; className: string }> = {
   PENDING: { label: 'Pending', className: 'bg-info/10 text-info' },
   ACTIVE: { label: 'Aktif', className: 'bg-success/10 text-success' },
@@ -120,7 +126,7 @@ export default function MyRentalsScreen() {
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {formatDate(rental.tanggalSewa)} {rental.jamAmbil} - {formatDate(rental.tanggalKembali)} {rental.jamKembali}
+                {formatDate(rental.tanggalSewa)} {formatTime(rental.jamAmbil)} - {formatDate(rental.tanggalKembali)} {formatTime(rental.jamKembali)}
               </p>
               <p className="text-sm font-bold text-primary mt-1.5">
                 {formatPrice(rental.totalHarga)}

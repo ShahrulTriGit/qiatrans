@@ -26,6 +26,12 @@ const formatDate = (dateStr: string) => {
   }
 }
 
+const formatTime = (time?: string | null) => {
+  if (!time) return ''
+  const [h, m] = time.split(':')
+  return `${h}.${m}`
+}
+
 const statusBadge = (status: string) => {
   switch (status) {
     case 'PENDING':
@@ -171,7 +177,7 @@ export default function RentalDetailScreen() {
               <div className="min-w-0">
                 <p className="text-sm font-medium">Ambil</p>
                 <p className="text-xs text-muted-foreground">
-                  {formatDate(rental.tanggalSewa)} {rental.jamAmbil}
+                  {formatDate(rental.tanggalSewa)} {formatTime(rental.jamAmbil)}
                 </p>
               </div>
             </div>
@@ -183,7 +189,7 @@ export default function RentalDetailScreen() {
               <div className="min-w-0">
                 <p className="text-sm font-medium">Kembali</p>
                 <p className="text-xs text-muted-foreground">
-                  {formatDate(rental.tanggalKembali)} {rental.jamKembali}
+                  {formatDate(rental.tanggalKembali)} {formatTime(rental.jamKembali)}
                 </p>
               </div>
             </div>

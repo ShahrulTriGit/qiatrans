@@ -24,6 +24,12 @@ const formatDate = (dateStr: string) => {
   }
 }
 
+const formatTime = (time?: string | null) => {
+  if (!time) return ''
+  const [h, m] = time.split(':')
+  return `${h}.${m}`
+}
+
 export default function RentalHistoryScreen() {
   const { goBack, setCustomerPage, customerPage } = useNavStore()
   const { data: session } = useSession()
@@ -164,8 +170,8 @@ export default function RentalHistoryScreen() {
                         {rental.vehicle?.tahun}
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {formatDate(rental.tanggalSewa)} {rental.jamAmbil} -{' '}
-                        {formatDate(rental.tanggalKembali)} {rental.jamKembali}
+                        {formatDate(rental.tanggalSewa)} {formatTime(rental.jamAmbil)} -{' '}
+                        {formatDate(rental.tanggalKembali)} {formatTime(rental.jamKembali)}
                       </p>
                       <p className="text-sm font-bold text-primary mt-1">
                         {formatPrice(rental.totalHarga)}

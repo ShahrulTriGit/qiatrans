@@ -19,8 +19,14 @@ function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
+function formatTime(time?: string | null) {
+  if (!time) return ''
+  const [h, m] = time.split(':')
+  return `${h}.${m}`
+}
+
 function formatDateTime(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
 }
 
 function getStatusBadge(status: RentalStatus) {
@@ -223,12 +229,12 @@ export default function RentalDetailScreen() {
             <div>
               <p className="text-sm text-muted-foreground">Tanggal Sewa</p>
               <p className="font-semibold">{formatDate(rental.tanggalSewa)}</p>
-              {rental.jamAmbil && <p className="text-sm text-muted-foreground">{rental.jamAmbil}</p>}
+              {rental.jamAmbil && <p className="text-sm text-muted-foreground">{formatTime(rental.jamAmbil)}</p>}
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Tanggal Kembali</p>
               <p className="font-semibold">{formatDate(rental.tanggalKembali)}</p>
-              {rental.jamKembali && <p className="text-sm text-muted-foreground">{rental.jamKembali}</p>}
+              {rental.jamKembali && <p className="text-sm text-muted-foreground">{formatTime(rental.jamKembali)}</p>}
             </div>
           </div>
           {rental.tanggalPengembalian && (
