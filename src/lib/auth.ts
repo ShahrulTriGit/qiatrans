@@ -89,12 +89,28 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Password salah')
         }
 
+        const email = (u.email as string).toLowerCase()
+        const adminEmails = (process.env.ADMIN_EMAILS ?? '').split(',').map(e => e.trim().toLowerCase())
+        const ownerEmails = (process.env.OWNER_EMAILS ?? '').split(',').map(e => e.trim().toLowerCase())
+        const superAdminEmails = (process.env.SUPER_ADMIN_EMAILS ?? '').split(',').map(e => e.trim().toLowerCase())
+        const isSuperAdmin = superAdminEmails.includes(email)
+        const isOwner = !isSuperAdmin && ownerEmails.includes(email)
+        const isAdmin = !isSuperAdmin && !isOwner && adminEmails.includes(email)
+        const role = isSuperAdmin ? 'SUPER_ADMIN' : isOwner ? 'OWNER' : isAdmin ? 'ADMIN' : 'CUSTOMER'
+
+        if (u.role !== role) {
+          await db.user.update({
+            where: { id: u.id as string },
+            data: { role },
+          })
+        }
+
         return {
           id: u.id as string,
           email: u.email as string,
           nama: u.nama as string,
           name: u.nama as string,
-          role: u.role as 'CUSTOMER' | 'ADMIN' | 'OWNER' | 'SUPER_ADMIN',
+          role: role as 'CUSTOMER' | 'ADMIN' | 'OWNER' | 'SUPER_ADMIN',
         }
       },
     }),
