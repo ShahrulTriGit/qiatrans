@@ -34,7 +34,6 @@ export default function BookingScreen() {
   const [openStart, setOpenStart] = useState(false)
   const [openEnd, setOpenEnd] = useState(false)
   const [missingDocs, setMissingDocs] = useState(false)
-  const [durasiType, setDurasiType] = useState<'24jam' | '12jam'>('24jam')
 
   const checkDocuments = useCallback(async () => {
     try {
@@ -79,12 +78,27 @@ export default function BookingScreen() {
     }
   }, [selectedVehicleId, fetchVehicle, checkDocuments])
 
-  const days = useMemo(() => {
-    if (!tanggalSewa || !tanggalKembali) return 0
-    const diff = tanggalKembali.getTime() - tanggalSewa.getTime()
-    const d = Math.ceil(diff / (1000 * 60 * 60 * 24))
-    return d > 0 ? d : 0
-  }, [tanggalSewa, tanggalKembali])
+  const durationInfo = useMemo(() => {
+    if (!tanggalSewa || !tanggalKembali) return { days: 0, durasiType: '24jam' as const }
+
+    const [startH, startM] = jamAmbil.split(':').map(Number)
+    const [endH, endM] = jamKembali.split(':').map(Number)
+
+    const start = new Date(tanggalSewa)
+    start.setHours(startH, startM, 0, 0)
+    const end = new Date(tanggalKembali)
+    end.setHours(endH, endM, 0, 0)
+
+    const totalHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60)
+    if (totalHours <= 0) return { days: 0, durasiType: '24jam' as const }
+
+    if (totalHours <= 12) return { days: 1, durasiType: '12jam' as const }
+    if (totalHours <= 24) return { days: 1, durasiType: '24jam' as const }
+    return { days: Math.ceil(totalHours / 24), durasiType: '24jam' as const }
+  }, [tanggalSewa, tanggalKembali, jamAmbil, jamKembali])
+
+  const days = durationInfo.days
+  const durasiType = durationInfo.durasiType
 
   const pricePerUnit = useMemo(() => {
     if (!vehicle) return 0
@@ -237,41 +251,22 @@ export default function BookingScreen() {
           </Card>
         )}
 
-        {/* Duration Type */}
-        <Card className="border-0 shadow-md rounded-2xl">
-          <CardContent className="p-5 space-y-3">
-            <h3 className="text-sm font-semibold flex items-center gap-2">
-              <Timer className="w-4 h-4 text-primary" />
-              Durasi Sewa
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => setDurasiType('24jam')}
-                className={`p-3 rounded-xl border-2 text-left transition-all ${
-                  durasiType === '24jam'
-                    ? 'border-primary bg-primary/5'
-                    : 'border-border hover:border-primary/50'
-                }`}
-              >
-                <p className="text-sm font-semibold">Per Hari</p>
-                <p className="text-xs text-muted-foreground mt-0.5">24 jam</p>
-                <p className="text-xs font-medium text-primary mt-1">{formatPrice(vehicle?.hargaSewa || 0)}</p>
-              </button>
-              <button
-                onClick={() => setDurasiType('12jam')}
-                className={`p-3 rounded-xl border-2 text-left transition-all ${
-                  durasiType === '12jam'
-                    ? 'border-primary bg-primary/5'
-                    : 'border-border hover:border-primary/50'
-                }`}
-              >
-                <p className="text-sm font-semibold">Setengah Hari</p>
-                <p className="text-xs text-muted-foreground mt-0.5">12 jam</p>
-                <p className="text-xs font-medium text-primary mt-1">{formatPrice(vehicle?.hargaSewa12Jam ?? Math.round((vehicle?.hargaSewa || 0) / 2))}</p>
-              </button>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Duration Info (auto-detected) */}
+        {days > 0 && (
+          <Card className="border-0 shadow-md rounded-2xl">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <Timer className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">Durasi Otomatis</p>
+                <p className="text-xs text-muted-foreground">
+                  {days} {days === 1 ? 'hari' : 'hari'} &middot; {durasiType === '12jam' ? 'Setengah Hari (12 jam)' : 'Penuh (24 jam)'}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Date Pickers */}
         <Card className="border-0 shadow-md rounded-2xl">
