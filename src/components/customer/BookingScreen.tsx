@@ -4,13 +4,13 @@ import { useCallback, useEffect, useState, useMemo } from 'react'
 import { ArrowLeft, Car, CalendarDays, Clock, StickyNote, AlertTriangle, Timer } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { useNavStore } from '@/stores/navStore'
 import type { Vehicle } from '@/types'
 import { toast } from 'sonner'
@@ -20,6 +20,14 @@ import { id as idLocale } from 'date-fns/locale'
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price)
 
+const timeOptions = Array.from({ length: 24 }, (_, i) => {
+  const h = String(i).padStart(2, '0')
+  return Array.from({ length: 4 }, (_, j) => {
+    const m = String(j * 15).padStart(2, '0')
+    return `${h}.${m}`
+  })
+}).flat()
+
 export default function BookingScreen() {
   const { goBack, setCustomerPage, selectedVehicleId } = useNavStore()
   const { data: session, update } = useSession()
@@ -28,8 +36,8 @@ export default function BookingScreen() {
   const [submitting, setSubmitting] = useState(false)
   const [tanggalSewa, setTanggalSewa] = useState<Date>()
   const [tanggalKembali, setTanggalKembali] = useState<Date>()
-  const [jamAmbil, setJamAmbil] = useState('08:00')
-  const [jamKembali, setJamKembali] = useState('08:00')
+  const [jamAmbil, setJamAmbil] = useState('08.00')
+  const [jamKembali, setJamKembali] = useState('08.00')
   const [catatan, setCatatan] = useState('')
   const [openStart, setOpenStart] = useState(false)
   const [openEnd, setOpenEnd] = useState(false)
@@ -81,8 +89,8 @@ export default function BookingScreen() {
   const durationInfo = useMemo(() => {
     if (!tanggalSewa || !tanggalKembali) return { days: 0, durasiType: '24jam' as const }
 
-    const [startH, startM] = jamAmbil.split(':').map(Number)
-    const [endH, endM] = jamKembali.split(':').map(Number)
+    const [startH, startM] = jamAmbil.split('.').map(Number)
+    const [endH, endM] = jamKembali.split('.').map(Number)
 
     const start = new Date(tanggalSewa)
     start.setHours(startH, startM, 0, 0)
@@ -151,8 +159,8 @@ export default function BookingScreen() {
           vehicleId: selectedVehicleId,
           tanggalSewa: tanggalSewa.toISOString(),
           tanggalKembali: tanggalKembali.toISOString(),
-          jamAmbil,
-          jamKembali,
+          jamAmbil: jamAmbil.replace('.', ':'),
+          jamKembali: jamKembali.replace('.', ':'),
           catatan: catatan || null,
           totalHarga: totalPrice,
           durasiType,
@@ -306,12 +314,16 @@ export default function BookingScreen() {
               </Popover>
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
-                <Input
-                  type="time"
-                  value={jamAmbil}
-                  onChange={(e) => setJamAmbil(e.target.value)}
-                  className="rounded-xl h-11"
-                />
+                <Select value={jamAmbil} onValueChange={setJamAmbil}>
+                  <SelectTrigger className="rounded-xl h-11">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {timeOptions.map((t) => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -347,12 +359,16 @@ export default function BookingScreen() {
               </Popover>
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
-                <Input
-                  type="time"
-                  value={jamKembali}
-                  onChange={(e) => setJamKembali(e.target.value)}
-                  className="rounded-xl h-11"
-                />
+                <Select value={jamKembali} onValueChange={setJamKembali}>
+                  <SelectTrigger className="rounded-xl h-11">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {timeOptions.map((t) => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </CardContent>
