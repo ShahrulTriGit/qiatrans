@@ -67,6 +67,7 @@ export async function PUT(
         ...(body.warna !== undefined && { warna: body.warna }),
         ...(body.platNomor !== undefined && { platNomor: body.platNomor }),
         ...(body.hargaSewa !== undefined && { hargaSewa: Number(body.hargaSewa) }),
+        ...(body.hargaSewa12Jam !== undefined && { hargaSewa12Jam: Number(body.hargaSewa12Jam) }),
         ...(body.kategori !== undefined && { kategori: body.kategori }),
         ...(body.transmisi !== undefined && { transmisi: body.transmisi }),
         ...(body.bahanBakar !== undefined && { bahanBakar: body.bahanBakar }),

@@ -124,6 +124,12 @@ export default function VehicleDetailScreen() {
               </span>
               <span className="text-sm text-muted-foreground">/24 jam</span>
             </div>
+            <div className="flex items-baseline gap-1 mt-1">
+              <span className="text-lg font-bold text-primary">
+                {formatPrice(vehicle.hargaSewa12Jam)}
+              </span>
+              <span className="text-sm text-muted-foreground">/12 jam</span>
+            </div>
 
             <Separator className="my-4" />
 

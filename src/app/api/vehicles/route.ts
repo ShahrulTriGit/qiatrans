@@ -58,6 +58,7 @@ export async function POST(request: NextRequest) {
       warna,
       platNomor,
       hargaSewa,
+      hargaSewa12Jam,
       kategori,
       transmisi,
       bahanBakar,
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
       deskripsi,
     } = body
 
-    if (!namaMobil || !merk || !model || !tahun || !platNomor || !hargaSewa || !kategori) {
+    if (!namaMobil || !merk || !model || !tahun || !platNomor || !hargaSewa || !hargaSewa12Jam || !kategori) {
       return NextResponse.json(
         { success: false, error: 'Data kendaraan tidak lengkap' },
         { status: 400 }
@@ -83,6 +84,7 @@ export async function POST(request: NextRequest) {
         warna: warna || '',
         platNomor,
         hargaSewa: Number(hargaSewa),
+        hargaSewa12Jam: Number(hargaSewa12Jam),
         kategori,
         transmisi: transmisi || 'Manual',
         bahanBakar: bahanBakar || 'Bensin',

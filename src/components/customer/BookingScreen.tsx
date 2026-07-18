@@ -88,7 +88,7 @@ export default function BookingScreen() {
 
   const pricePerUnit = useMemo(() => {
     if (!vehicle) return 0
-    return durasiType === '12jam' ? vehicle.hargaSewa / 2 : vehicle.hargaSewa
+    return durasiType === '12jam' ? vehicle.hargaSewa12Jam : vehicle.hargaSewa
   }, [vehicle, durasiType])
 
   const totalPrice = useMemo(() => {
@@ -227,7 +227,7 @@ export default function BookingScreen() {
                     /24 jam
                   </span>
                   <span className="text-xs font-normal text-muted-foreground ml-1">
-                    ({formatPrice(vehicle.hargaSewa / 2)}/12 jam)
+                    ({formatPrice(vehicle.hargaSewa12Jam)}/12 jam)
                   </span>
                 </p>
               </div>
@@ -266,7 +266,7 @@ export default function BookingScreen() {
               >
                 <p className="text-sm font-semibold">Setengah Hari</p>
                 <p className="text-xs text-muted-foreground mt-0.5">12 jam</p>
-                <p className="text-xs font-medium text-primary mt-1">{formatPrice((vehicle?.hargaSewa || 0) / 2)}</p>
+                <p className="text-xs font-medium text-primary mt-1">{formatPrice(vehicle?.hargaSewa12Jam || 0)}</p>
               </button>
             </div>
           </CardContent>

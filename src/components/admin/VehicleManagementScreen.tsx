@@ -62,6 +62,7 @@ const emptyForm = {
   warna: '',
   platNomor: '',
   hargaSewa: 0,
+  hargaSewa12Jam: 0,
   kategori: 'City Car' as Vehicle['kategori'],
   transmisi: 'Automatic' as Vehicle['transmisi'],
   bahanBakar: 'Bensin' as Vehicle['bahanBakar'],
@@ -133,6 +134,7 @@ export default function VehicleManagementScreen() {
       warna: vehicle.warna,
       platNomor: vehicle.platNomor,
       hargaSewa: vehicle.hargaSewa,
+      hargaSewa12Jam: vehicle.hargaSewa12Jam,
       kategori: vehicle.kategori,
       transmisi: vehicle.transmisi,
       bahanBakar: vehicle.bahanBakar,
@@ -272,7 +274,8 @@ export default function VehicleManagementScreen() {
                     <TableHead>Nama Mobil</TableHead>
                     <TableHead>Merk</TableHead>
                     <TableHead>Plat Nomor</TableHead>
-                    <TableHead>Harga Sewa</TableHead>
+                    <TableHead>Harga 24 Jam</TableHead>
+                    <TableHead>Harga 12 Jam</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
@@ -299,7 +302,8 @@ export default function VehicleManagementScreen() {
                         <TableCell className="font-medium">{vehicle.namaMobil}</TableCell>
                         <TableCell>{vehicle.merk}</TableCell>
                         <TableCell className="font-mono text-sm">{vehicle.platNomor}</TableCell>
-                        <TableCell>{formatCurrency(vehicle.hargaSewa)}/24 jam</TableCell>
+                        <TableCell>{formatCurrency(vehicle.hargaSewa)}</TableCell>
+                        <TableCell>{formatCurrency(vehicle.hargaSewa12Jam)}</TableCell>
                         <TableCell>
                           <Badge className={getStatusColor(vehicle.status)} variant="outline">
                             {vehicle.status}
@@ -355,7 +359,7 @@ export default function VehicleManagementScreen() {
                         {vehicle.status}
                       </Badge>
                     </div>
-                    <p className="text-sm font-bold text-primary mt-1">{formatCurrency(vehicle.hargaSewa)}/24 jam</p>
+                    <p className="text-sm font-bold text-primary mt-1">{formatCurrency(vehicle.hargaSewa)}/24 jam &middot; {formatCurrency(vehicle.hargaSewa12Jam)}/12 jam</p>
                     <div className="flex gap-1 mt-2">
                       <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => openEditForm(vehicle)}>
                         <Edit className="w-3 h-3 mr-1" /> Edit
@@ -418,6 +422,23 @@ export default function VehicleManagementScreen() {
                   onChange={(e) => {
                     const raw = e.target.value.replace(/\./g, '')
                     setForm({ ...form, hargaSewa: parseInt(raw) || 0 })
+                  }}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="hargaSewa12Jam">Harga Sewa (per 12 jam)</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">Rp</span>
+                <Input
+                  id="hargaSewa12Jam"
+                  type="text"
+                  inputMode="numeric"
+                  value={form.hargaSewa12Jam ? form.hargaSewa12Jam.toLocaleString('id-ID') : ''}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/\./g, '')
+                    setForm({ ...form, hargaSewa12Jam: parseInt(raw) || 0 })
                   }}
                   className="pl-10"
                 />

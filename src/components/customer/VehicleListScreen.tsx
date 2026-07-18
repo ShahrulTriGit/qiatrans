@@ -231,6 +231,12 @@ export default function VehicleListScreen() {
                       /24 jam
                     </span>
                   </p>
+                  <p className="text-xs font-medium text-primary">
+                    {formatPrice(v.hargaSewa12Jam)}
+                    <span className="text-xs font-normal text-muted-foreground">
+                      /12 jam
+                    </span>
+                  </p>
                 </CardContent>
               </Card>
             ))}
