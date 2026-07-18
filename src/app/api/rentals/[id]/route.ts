@@ -119,9 +119,12 @@ export async function PUT(
       }
 
       const currentEnd = new Date(existing.tanggalKembali)
+      const [curH, curM] = (existing.jamKembali || '08:00').split(':').map(Number)
+      currentEnd.setHours(curH, curM, 0, 0)
       currentEnd.setHours(currentEnd.getHours() + hours)
 
       updateData.tanggalKembali = currentEnd.toISOString()
+      updateData.jamKembali = `${String(currentEnd.getHours()).padStart(2, '0')}:${String(currentEnd.getMinutes()).padStart(2, '0')}`
       updateData.totalHarga = Number(existing.totalHarga) + biayaTambahan
     }
 
