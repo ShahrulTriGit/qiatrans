@@ -29,7 +29,7 @@ export interface Vehicle {
   warna: string;
   platNomor: string;
   hargaSewa: number;
-  hargaSewa12Jam: number;
+  hargaSewa12Jam?: number;
   kategori: 'City Car' | 'MPV (Multi Purpose Vehicle)' | 'Van/Minibus';
   transmisi: 'Manual' | 'Automatic';
   bahanBakar: 'Bensin' | 'Diesel' | 'Hybrid' | 'Listrik';

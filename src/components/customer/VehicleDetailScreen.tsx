@@ -126,7 +126,7 @@ export default function VehicleDetailScreen() {
             </div>
             <div className="flex items-baseline gap-1 mt-1">
               <span className="text-lg font-bold text-primary">
-                {formatPrice(vehicle.hargaSewa12Jam)}
+                {formatPrice(vehicle.hargaSewa12Jam ?? Math.round(vehicle.hargaSewa / 2))}
               </span>
               <span className="text-sm text-muted-foreground">/12 jam</span>
             </div>

@@ -134,7 +134,7 @@ export default function VehicleManagementScreen() {
       warna: vehicle.warna,
       platNomor: vehicle.platNomor,
       hargaSewa: vehicle.hargaSewa,
-      hargaSewa12Jam: vehicle.hargaSewa12Jam,
+      hargaSewa12Jam: vehicle.hargaSewa12Jam ?? Math.round(vehicle.hargaSewa / 2),
       kategori: vehicle.kategori,
       transmisi: vehicle.transmisi,
       bahanBakar: vehicle.bahanBakar,
@@ -303,7 +303,7 @@ export default function VehicleManagementScreen() {
                         <TableCell>{vehicle.merk}</TableCell>
                         <TableCell className="font-mono text-sm">{vehicle.platNomor}</TableCell>
                         <TableCell>{formatCurrency(vehicle.hargaSewa)}</TableCell>
-                        <TableCell>{formatCurrency(vehicle.hargaSewa12Jam)}</TableCell>
+                        <TableCell>{formatCurrency(vehicle.hargaSewa12Jam ?? Math.round(vehicle.hargaSewa / 2))}</TableCell>
                         <TableCell>
                           <Badge className={getStatusColor(vehicle.status)} variant="outline">
                             {vehicle.status}
@@ -359,7 +359,7 @@ export default function VehicleManagementScreen() {
                         {vehicle.status}
                       </Badge>
                     </div>
-                    <p className="text-sm font-bold text-primary mt-1">{formatCurrency(vehicle.hargaSewa)}/24 jam &middot; {formatCurrency(vehicle.hargaSewa12Jam)}/12 jam</p>
+                    <p className="text-sm font-bold text-primary mt-1">{formatCurrency(vehicle.hargaSewa)}/24 jam &middot; {formatCurrency(vehicle.hargaSewa12Jam ?? Math.round(vehicle.hargaSewa / 2))}/12 jam</p>
                     <div className="flex gap-1 mt-2">
                       <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => openEditForm(vehicle)}>
                         <Edit className="w-3 h-3 mr-1" /> Edit

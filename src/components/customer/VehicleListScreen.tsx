@@ -232,7 +232,7 @@ export default function VehicleListScreen() {
                     </span>
                   </p>
                   <p className="text-xs font-medium text-primary">
-                    {formatPrice(v.hargaSewa12Jam)}
+                    {formatPrice(v.hargaSewa12Jam ?? Math.round(v.hargaSewa / 2))}
                     <span className="text-xs font-normal text-muted-foreground">
                       /12 jam
                     </span>
