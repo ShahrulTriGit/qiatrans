@@ -54,6 +54,7 @@ export interface Rental {
   tanggalPengembalian?: string | null;
   status: RentalStatus;
   totalHarga: number;
+  durasiType?: string | null;
   catatan?: string | null;
   createdAt: string;
   updatedAt: string;

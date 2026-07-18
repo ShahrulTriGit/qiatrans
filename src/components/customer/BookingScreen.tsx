@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState, useMemo } from 'react'
-import { ArrowLeft, Car, CalendarDays, Clock, StickyNote, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Car, CalendarDays, Clock, StickyNote, AlertTriangle, Timer } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,6 +34,7 @@ export default function BookingScreen() {
   const [openStart, setOpenStart] = useState(false)
   const [openEnd, setOpenEnd] = useState(false)
   const [missingDocs, setMissingDocs] = useState(false)
+  const [durasiType, setDurasiType] = useState<'24jam' | '12jam'>('24jam')
 
   const checkDocuments = useCallback(async () => {
     try {
@@ -85,10 +86,15 @@ export default function BookingScreen() {
     return d > 0 ? d : 0
   }, [tanggalSewa, tanggalKembali])
 
+  const pricePerUnit = useMemo(() => {
+    if (!vehicle) return 0
+    return durasiType === '12jam' ? vehicle.hargaSewa / 2 : vehicle.hargaSewa
+  }, [vehicle, durasiType])
+
   const totalPrice = useMemo(() => {
     if (!vehicle || days === 0) return 0
-    return days * vehicle.hargaSewa
-  }, [vehicle, days])
+    return days * pricePerUnit
+  }, [vehicle, days, pricePerUnit])
 
   const handleSubmit = async () => {
     if (!selectedVehicleId) {
@@ -134,6 +140,7 @@ export default function BookingScreen() {
           jamKembali,
           catatan: catatan || null,
           totalHarga: totalPrice,
+          durasiType,
         }),
       })
 
@@ -219,12 +226,51 @@ export default function BookingScreen() {
                   <span className="text-xs font-normal text-muted-foreground">
                     /24 jam
                   </span>
+                  <span className="text-xs font-normal text-muted-foreground ml-1">
+                    ({formatPrice(vehicle.hargaSewa / 2)}/12 jam)
+                  </span>
                 </p>
               </div>
               <Badge variant="secondary">{vehicle.kategori}</Badge>
             </CardContent>
           </Card>
         )}
+
+        {/* Duration Type */}
+        <Card className="border-0 shadow-md rounded-2xl">
+          <CardContent className="p-5 space-y-3">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <Timer className="w-4 h-4 text-primary" />
+              Durasi Sewa
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setDurasiType('24jam')}
+                className={`p-3 rounded-xl border-2 text-left transition-all ${
+                  durasiType === '24jam'
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border hover:border-primary/50'
+                }`}
+              >
+                <p className="text-sm font-semibold">Per Hari</p>
+                <p className="text-xs text-muted-foreground mt-0.5">24 jam</p>
+                <p className="text-xs font-medium text-primary mt-1">{formatPrice(vehicle?.hargaSewa || 0)}</p>
+              </button>
+              <button
+                onClick={() => setDurasiType('12jam')}
+                className={`p-3 rounded-xl border-2 text-left transition-all ${
+                  durasiType === '12jam'
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border hover:border-primary/50'
+                }`}
+              >
+                <p className="text-sm font-semibold">Setengah Hari</p>
+                <p className="text-xs text-muted-foreground mt-0.5">12 jam</p>
+                <p className="text-xs font-medium text-primary mt-1">{formatPrice((vehicle?.hargaSewa || 0) / 2)}</p>
+              </button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Date Pickers */}
         <Card className="border-0 shadow-md rounded-2xl">
@@ -339,7 +385,7 @@ export default function BookingScreen() {
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">
-                  {formatPrice(vehicle?.hargaSewa || 0)} x {days} 24 jam
+                  {formatPrice(pricePerUnit)} x {days} {durasiType === '12jam' ? '12 jam' : '24 jam'}
                 </span>
                 <span>{formatPrice(totalPrice)}</span>
               </div>

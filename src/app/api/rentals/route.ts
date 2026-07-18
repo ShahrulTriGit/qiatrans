@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
       jamKembali,
       totalHarga,
       catatan,
+      durasiType,
     } = body
 
     if (!userId || !vehicleId || !tanggalSewa || !tanggalKembali || !totalHarga) {
@@ -83,6 +84,7 @@ export async function POST(request: NextRequest) {
         jamAmbil: jamAmbil || null,
         jamKembali: jamKembali || null,
         totalHarga: Number(totalHarga),
+        durasiType: durasiType || '24jam',
         catatan: catatan || null,
         status: 'PENDING',
       },
