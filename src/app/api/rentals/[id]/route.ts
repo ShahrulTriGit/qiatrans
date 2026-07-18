@@ -58,7 +58,7 @@ export async function PUT(
     const existing = existingRental as Record<string, string>
     const updateData: Record<string, unknown> = {}
 
-    if (body.status && session && session.user.role === 'ADMIN') {
+    if (body.status && session && (session.user.role === 'ADMIN' || session.user.role === 'OWNER' || session.user.role === 'SUPER_ADMIN')) {
       updateData.status = body.status
 
       if (body.status === 'ACTIVE') {

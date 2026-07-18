@@ -42,9 +42,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER' && session.user.role !== 'SUPER_ADMIN')) {
       return NextResponse.json(
-        { success: false, error: 'Akses ditolak. Hanya admin yang dapat menambah kendaraan' },
+        { success: false, error: 'Akses ditolak. Hanya admin/owner/super admin yang dapat menambah kendaraan' },
         { status: 403 }
       )
     }

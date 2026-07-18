@@ -138,7 +138,7 @@ export default function AppShell() {
   }
 
   // Authenticated - show role-based layout
-  const isAdmin = session.user?.role === 'ADMIN'
+  const isAdmin = session.user?.role === 'ADMIN' || session.user?.role === 'OWNER' || session.user?.role === 'SUPER_ADMIN'
 
   if (isAdmin) {
     return (

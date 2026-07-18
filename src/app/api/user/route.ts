@@ -61,7 +61,7 @@ export async function PUT(request: NextRequest) {
     if (fotoProfil !== undefined) updateData.fotoProfil = fotoProfil
     if (fotoKTP !== undefined) updateData.fotoKTP = fotoKTP
     if (fotoSIM !== undefined) updateData.fotoSIM = fotoSIM
-    if (verified !== undefined && session.user.role === 'ADMIN') updateData.verified = verified
+    if (verified !== undefined && (session.user.role === 'ADMIN' || session.user.role === 'OWNER' || session.user.role === 'SUPER_ADMIN')) updateData.verified = verified
 
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json(

@@ -21,8 +21,12 @@ export const authOptions: NextAuthOptions = {
             const name = decoded.name || email.split('@')[0]
 
             const adminEmails = (process.env.ADMIN_EMAILS ?? '').split(',').map(e => e.trim().toLowerCase())
-            const isAdmin = adminEmails.includes(email.toLowerCase())
-            const role = isAdmin ? 'ADMIN' : 'CUSTOMER'
+            const ownerEmails = (process.env.OWNER_EMAILS ?? '').split(',').map(e => e.trim().toLowerCase())
+            const superAdminEmails = (process.env.SUPER_ADMIN_EMAILS ?? '').split(',').map(e => e.trim().toLowerCase())
+            const isSuperAdmin = superAdminEmails.includes(email.toLowerCase())
+            const isOwner = !isSuperAdmin && ownerEmails.includes(email.toLowerCase())
+            const isAdmin = !isSuperAdmin && !isOwner && adminEmails.includes(email.toLowerCase())
+            const role = isSuperAdmin ? 'SUPER_ADMIN' : isOwner ? 'OWNER' : isAdmin ? 'ADMIN' : 'CUSTOMER'
 
             let userRecord = await db.user.findFirst({ where: { email } }) as Record<string, unknown> | null
 
@@ -59,7 +63,7 @@ export const authOptions: NextAuthOptions = {
               email: u.email as string,
               nama: u.nama as string,
               name: u.nama as string,
-              role: u.role as 'CUSTOMER' | 'ADMIN',
+              role: u.role as 'CUSTOMER' | 'ADMIN' | 'OWNER' | 'SUPER_ADMIN',
             }
           } catch {
             throw new Error('Token tidak valid')
@@ -90,7 +94,7 @@ export const authOptions: NextAuthOptions = {
           email: u.email as string,
           nama: u.nama as string,
           name: u.nama as string,
-          role: u.role as 'CUSTOMER' | 'ADMIN',
+          role: u.role as 'CUSTOMER' | 'ADMIN' | 'OWNER' | 'SUPER_ADMIN',
         }
       },
     }),
@@ -114,7 +118,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
-        session.user.role = token.role as 'CUSTOMER' | 'ADMIN'
+        session.user.role = token.role as 'CUSTOMER' | 'ADMIN' | 'OWNER' | 'SUPER_ADMIN'
         session.user.nama = token.nama as string
       }
       return session

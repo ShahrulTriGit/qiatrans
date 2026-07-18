@@ -25,7 +25,7 @@ export default function LoginScreen() {
     await new Promise(r => setTimeout(r, 500))
     const res = await fetch('/api/auth/session')
     const session = await res.json()
-    if (role === 'ADMIN' || session?.user?.role === 'ADMIN') {
+    if (role === 'ADMIN' || role === 'OWNER' || role === 'SUPER_ADMIN' || session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER' || session?.user?.role === 'SUPER_ADMIN') {
       setAdminPage('dashboard')
     } else {
       setCustomerPage('home')

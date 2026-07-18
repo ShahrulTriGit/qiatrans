@@ -31,7 +31,7 @@ export type AdminPage =
 const MAX_HISTORY = 50
 
 interface HistoryEntry {
-  role: 'customer' | 'admin'
+  role: 'customer' | 'admin' | 'owner' | 'super_admin'
   page: string
   params: {
     selectedVehicleId: string | null

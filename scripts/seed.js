@@ -14,7 +14,28 @@ const now = new Date().toISOString();
 async function seed() {
   console.log('Memulai seeding data...\n');
 
-  // 1. Create Admin User
+  // 1. Create Super Admin User
+  console.log('Membuat user super admin...');
+  const superAdminPassword = hashSync('superadmin123', 12);
+  const superAdminRef = await db.collection('users').add({
+    nama: 'Super Admin QiaTrans',
+    email: 'superadmin@qiatrans.com',
+    password: superAdminPassword,
+    role: 'SUPER_ADMIN',
+    verified: true,
+    noTelepon: '081234567895',
+    alamat: 'Jl. Super Admin No. 1',
+    fotoProfil: null,
+    noKTP: null,
+    noSIM: null,
+    fotoKTP: null,
+    fotoSIM: null,
+    createdAt: now,
+    updatedAt: now,
+  });
+  console.log(`  ✓ Super Admin: superadmin@qiatrans.com / superadmin123 (ID: ${superAdminRef.id})`);
+
+  // 1a. Create Admin User
   console.log('Membuat user admin...');
   const adminPassword = hashSync('admin123', 12);
   const adminRef = await db.collection('users').add({
@@ -34,6 +55,27 @@ async function seed() {
     updatedAt: now,
   });
   console.log(`  ✓ Admin: admin@qiatrans.com / admin123 (ID: ${adminRef.id})`);
+
+  // 1b. Create Owner User
+  console.log('Membuat user owner...');
+  const ownerPassword = hashSync('owner123', 12);
+  const ownerRef = await db.collection('users').add({
+    nama: 'Owner QiaTrans',
+    email: 'owner@qiatrans.com',
+    password: ownerPassword,
+    role: 'OWNER',
+    verified: true,
+    noTelepon: '081234567894',
+    alamat: 'Jl. Owner No. 1',
+    fotoProfil: null,
+    noKTP: null,
+    noSIM: null,
+    fotoKTP: null,
+    fotoSIM: null,
+    createdAt: now,
+    updatedAt: now,
+  });
+  console.log(`  ✓ Owner: owner@qiatrans.com / owner123 (ID: ${ownerRef.id})`);
 
   // 2. Create Sample Customer
   console.log('Membuat user customer...');
@@ -159,8 +201,10 @@ async function seed() {
   }
 
   console.log('\n✓ Seeding selesai!');
-  console.log(`\nLogin Admin:  admin@qiatrans.com / admin123`);
-  console.log(`Login User:   budi@email.com / customer123`);
+  console.log(`\nLogin Super Admin: superadmin@qiatrans.com / superadmin123`);
+  console.log(`Login Admin:       admin@qiatrans.com / admin123`);
+  console.log(`Login Owner:       owner@qiatrans.com / owner123`);
+  console.log(`Login User:        budi@email.com / customer123`);
 
   process.exit(0);
 }

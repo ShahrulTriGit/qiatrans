@@ -6,7 +6,7 @@ declare module 'next-auth' {
       id: string
       nama: string
       email: string
-      role: 'CUSTOMER' | 'ADMIN'
+      role: 'CUSTOMER' | 'ADMIN' | 'OWNER' | 'SUPER_ADMIN'
     }
   }
 
@@ -14,7 +14,7 @@ declare module 'next-auth' {
     id: string
     nama: string
     email: string
-    role: 'CUSTOMER' | 'ADMIN'
+    role: 'CUSTOMER' | 'ADMIN' | 'OWNER' | 'SUPER_ADMIN'
   }
 }
 

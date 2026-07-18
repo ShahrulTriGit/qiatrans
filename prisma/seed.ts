@@ -14,6 +14,21 @@ async function main() {
   await prisma.vehicle.deleteMany()
   await prisma.user.deleteMany()
 
+  // Create Super Admin user
+  const superAdminPassword = await hash('superadmin123', 12)
+  const superAdmin = await prisma.user.create({
+    data: {
+      nama: 'Super Admin QiaTrans',
+      email: 'superadmin@qiatrans.com',
+      password: superAdminPassword,
+      role: 'SUPER_ADMIN',
+      noTelepon: '081234567895',
+      alamat: 'Jl. Super Admin No. 1, Jakarta',
+      verified: true,
+    },
+  })
+  console.log('✅ Super Admin created:', superAdmin.email)
+
   // Create Admin user
   const adminPassword = await hash('admin123', 12)
   const admin = await prisma.user.create({
@@ -28,6 +43,21 @@ async function main() {
     },
   })
   console.log('✅ Admin created:', admin.email)
+
+  // Create Owner user
+  const ownerPassword = await hash('owner123', 12)
+  const owner = await prisma.user.create({
+    data: {
+      nama: 'Owner QiaTrans',
+      email: 'owner@qiatrans.com',
+      password: ownerPassword,
+      role: 'OWNER',
+      noTelepon: '081234567894',
+      alamat: 'Jl. Owner No. 1, Jakarta',
+      verified: true,
+    },
+  })
+  console.log('✅ Owner created:', owner.email)
 
   // Create Customer users
   const customer1Password = await hash('customer123', 12)

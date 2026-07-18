@@ -4,7 +4,7 @@ export interface User {
   nama: string;
   email: string;
   password?: string;
-  role: 'CUSTOMER' | 'ADMIN';
+  role: 'CUSTOMER' | 'ADMIN' | 'OWNER' | 'SUPER_ADMIN';
   fotoProfil?: string | null;
   noKTP?: string | null;
   noSIM?: string | null;
@@ -153,14 +153,14 @@ export interface SessionUser {
   id: string;
   nama: string;
   email: string;
-  role: 'CUSTOMER' | 'ADMIN';
+  role: 'CUSTOMER' | 'ADMIN' | 'OWNER' | 'SUPER_ADMIN';
 }
 
 export interface RegisterData {
   nama: string;
   email: string;
   password: string;
-  role?: 'CUSTOMER' | 'ADMIN';
+  role?: 'CUSTOMER' | 'ADMIN' | 'OWNER' | 'SUPER_ADMIN';
 }
 
 export interface LoginData {

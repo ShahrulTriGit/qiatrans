@@ -6,9 +6,9 @@ import { db } from '@/lib/firestore'
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER' && session.user.role !== 'SUPER_ADMIN')) {
       return NextResponse.json(
-        { success: false, error: 'Akses ditolak. Hanya admin yang dapat melihat daftar pengguna' },
+        { success: false, error: 'Akses ditolak. Hanya admin/owner/super admin yang dapat melihat daftar pengguna' },
         { status: 403 }
       )
     }
@@ -57,11 +57,11 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { id, nama, noTelepon, alamat, noKTP, noSIM, fotoProfil, fotoKTP, fotoSIM, verified } = body
+    const { id, nama, noTelepon, alamat, noKTP, noSIM, fotoProfil, fotoKTP, fotoSIM, verified, role } = body
 
     // Users can only update their own profile unless admin
     const targetUserId = id || session.user.id
-    if (targetUserId !== session.user.id && session.user.role !== 'ADMIN') {
+    if (targetUserId !== session.user.id && session.user.role !== 'ADMIN' && session.user.role !== 'OWNER' && session.user.role !== 'SUPER_ADMIN') {
       return NextResponse.json(
         { success: false, error: 'Anda tidak memiliki akses untuk mengubah profil ini' },
         { status: 403 }
@@ -77,7 +77,17 @@ export async function PUT(request: NextRequest) {
     if (fotoProfil !== undefined) updateData.fotoProfil = fotoProfil
     if (fotoKTP !== undefined) updateData.fotoKTP = fotoKTP
     if (fotoSIM !== undefined) updateData.fotoSIM = fotoSIM
-    if (verified !== undefined && session.user.role === 'ADMIN') updateData.verified = verified
+    if (verified !== undefined && (session.user.role === 'ADMIN' || session.user.role === 'OWNER' || session.user.role === 'SUPER_ADMIN')) updateData.verified = verified
+    if (role !== undefined && session.user.role === 'SUPER_ADMIN') {
+      const validRoles = ['CUSTOMER', 'ADMIN', 'OWNER', 'SUPER_ADMIN']
+      if (!validRoles.includes(role)) {
+        return NextResponse.json(
+          { success: false, error: 'Role tidak valid. Role yang diizinkan: CUSTOMER, ADMIN, OWNER, SUPER_ADMIN' },
+          { status: 400 }
+        )
+      }
+      updateData.role = role
+    }
 
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json(

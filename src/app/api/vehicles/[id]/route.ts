@@ -36,9 +36,9 @@ export async function PUT(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER' && session.user.role !== 'SUPER_ADMIN')) {
       return NextResponse.json(
-        { success: false, error: 'Akses ditolak. Hanya admin yang dapat mengubah kendaraan' },
+        { success: false, error: 'Akses ditolak. Hanya admin/owner/super admin yang dapat mengubah kendaraan' },
         { status: 403 }
       )
     }
@@ -97,9 +97,9 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER' && session.user.role !== 'SUPER_ADMIN')) {
       return NextResponse.json(
-        { success: false, error: 'Akses ditolak. Hanya admin yang dapat menghapus kendaraan' },
+        { success: false, error: 'Akses ditolak. Hanya admin/owner/super admin yang dapat menghapus kendaraan' },
         { status: 403 }
       )
     }
