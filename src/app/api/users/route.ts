@@ -116,3 +116,57 @@ export async function PUT(request: NextRequest) {
     )
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session || session.user.role !== 'SUPER_ADMIN') {
+      return NextResponse.json(
+        { success: false, error: 'Akses ditolak. Hanya Super Admin yang dapat menghapus akun' },
+        { status: 403 }
+      )
+    }
+
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'ID pengguna harus diisi' },
+        { status: 400 }
+      )
+    }
+
+    if (id === session.user.id) {
+      return NextResponse.json(
+        { success: false, error: 'Anda tidak dapat menghapus akun sendiri' },
+        { status: 400 }
+      )
+    }
+
+    const user = await db.user.findUnique({ where: { id } })
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'Pengguna tidak ditemukan' },
+        { status: 404 }
+      )
+    }
+
+    await db.rental.deleteMany({ where: { userId: id } })
+    await db.notification.deleteMany({ where: { userId: id } })
+    await db.sUSResult.deleteMany({ where: { userId: id } })
+    await db.uEQResult.deleteMany({ where: { userId: id } })
+    await db.user.delete({ where: { id } })
+
+    return NextResponse.json({
+      success: true,
+      message: `Akun ${user.nama} berhasil dihapus`,
+    })
+  } catch (error) {
+    console.error('Delete user error:', error)
+    return NextResponse.json(
+      { success: false, error: 'Gagal menghapus akun' },
+      { status: 500 }
+    )
+  }
+}

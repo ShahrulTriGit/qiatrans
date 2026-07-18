@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
-import { Search, Shield, Loader2, Crown, UserCog, User } from 'lucide-react'
+import { Search, Shield, Loader2, Crown, UserCog, User, Trash2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -51,6 +51,8 @@ export default function AccessManagementScreen() {
   const [changeTarget, setChangeTarget] = useState<UserType | null>(null)
   const [newRole, setNewRole] = useState<string>('')
   const [changing, setChanging] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<UserType | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   const isSuperAdmin = session?.user?.role === 'SUPER_ADMIN'
 
@@ -98,6 +100,28 @@ export default function AccessManagementScreen() {
       setChanging(false)
       setChangeTarget(null)
       setNewRole('')
+    }
+  }
+
+  async function handleDelete() {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/users?id=${deleteTarget.id}`, {
+        method: 'DELETE',
+      })
+      if (res.ok) {
+        setUsers((prev) => prev.filter((u) => u.id !== deleteTarget.id))
+        toast.success(`Akun ${deleteTarget.nama} berhasil dihapus`)
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'Gagal menghapus akun')
+      }
+    } catch {
+      toast.error('Gagal menghapus akun')
+    } finally {
+      setDeleting(false)
+      setDeleteTarget(null)
     }
   }
 
@@ -200,7 +224,7 @@ export default function AccessManagementScreen() {
                     <TableHead>Email</TableHead>
                     <TableHead>Role Saat Ini</TableHead>
                     <TableHead>Verifikasi</TableHead>
-                    <TableHead className="text-right">Ubah Role</TableHead>
+                    <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -241,26 +265,37 @@ export default function AccessManagementScreen() {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
-                            <Select
-                              onOpenChange={() => setNewRole(user.role)}
-                              value={user.role}
-                              onValueChange={(value) => {
-                                if (value !== user.role) {
-                                  setChangeTarget(user)
-                                  setNewRole(value)
-                                }
-                              }}
-                            >
-                              <SelectTrigger className="w-[140px]" disabled={user.id === session?.user?.id}>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-                                <SelectItem value="ADMIN">Admin</SelectItem>
-                                <SelectItem value="OWNER">Owner</SelectItem>
-                                <SelectItem value="CUSTOMER">Customer</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <div className="flex items-center justify-end gap-2">
+                              <Select
+                                onOpenChange={() => setNewRole(user.role)}
+                                value={user.role}
+                                onValueChange={(value) => {
+                                  if (value !== user.role) {
+                                    setChangeTarget(user)
+                                    setNewRole(value)
+                                  }
+                                }}
+                              >
+                                <SelectTrigger className="w-[130px]" disabled={user.id === session?.user?.id}>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                                  <SelectItem value="ADMIN">Admin</SelectItem>
+                                  <SelectItem value="OWNER">Owner</SelectItem>
+                                  <SelectItem value="CUSTOMER">Customer</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              {user.id !== session?.user?.id && (
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => setDeleteTarget(user)}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </Button>
+                              )}
+                            </div>
                           </TableCell>
                         </TableRow>
                       )
@@ -307,25 +342,37 @@ export default function AccessManagementScreen() {
                         <Badge variant={user.verified ? 'default' : 'secondary'} className="text-xs">
                           {user.verified ? 'Terverifikasi' : 'Belum Verifikasi'}
                         </Badge>
-                        <Select
-                          value={user.role}
-                          onValueChange={(value) => {
-                            if (value !== user.role) {
-                              setChangeTarget(user)
-                              setNewRole(value)
-                            }
-                          }}
-                        >
-                          <SelectTrigger className="w-[120px] h-8 text-xs" disabled={user.id === session?.user?.id}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-                            <SelectItem value="ADMIN">Admin</SelectItem>
-                            <SelectItem value="OWNER">Owner</SelectItem>
-                            <SelectItem value="CUSTOMER">Customer</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <div className="flex items-center gap-2">
+                          <Select
+                            value={user.role}
+                            onValueChange={(value) => {
+                              if (value !== user.role) {
+                                setChangeTarget(user)
+                                setNewRole(value)
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="w-[110px] h-8 text-xs" disabled={user.id === session?.user?.id}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                              <SelectItem value="ADMIN">Admin</SelectItem>
+                              <SelectItem value="OWNER">Owner</SelectItem>
+                              <SelectItem value="CUSTOMER">Customer</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {user.id !== session?.user?.id && (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="h-8 w-8 p-0"
+                              onClick={() => setDeleteTarget(user)}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -352,6 +399,26 @@ export default function AccessManagementScreen() {
             <AlertDialogAction onClick={handleChangeRole} disabled={changing}>
               {changing && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Ubah Role
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus Akun</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin menghapus akun <strong>{deleteTarget?.nama}</strong> ({deleteTarget?.email})? 
+              Semua data terkait (rental, evaluasi, notifikasi) juga akan dihapus. Tindakan ini tidak dapat dibatalkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Hapus Akun
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
