@@ -1,14 +1,15 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { ArrowLeft, Car, CalendarDays, Clock, StickyNote } from 'lucide-react'
+import { ArrowLeft, Car, CalendarDays, Clock, StickyNote, Plus, Timer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useNavStore } from '@/stores/navStore'
-import type { Rental } from '@/types'
+import { toast } from 'sonner'
+import type { Rental, Vehicle } from '@/types'
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price)
@@ -44,6 +45,7 @@ export default function RentalDetailScreen() {
   const { goBack, selectedRentalId } = useNavStore()
   const [rental, setRental] = useState<Rental | null>(null)
   const [loading, setLoading] = useState(true)
+  const [extending, setExtending] = useState(false)
 
   const fetchRental = useCallback(async () => {
     if (!selectedRentalId) return
@@ -61,6 +63,29 @@ export default function RentalDetailScreen() {
   useEffect(() => {
     fetchRental()
   }, [fetchRental])
+
+  async function handleExtend(hours: number) {
+    if (!selectedRentalId) return
+    setExtending(true)
+    try {
+      const res = await fetch(`/api/rentals/${selectedRentalId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ extendHours: hours }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error('Gagal memperpanjang', { description: data.error })
+        return
+      }
+      toast.success(`Berhasil diperpanjang ${hours} jam`)
+      setRental(data.data)
+    } catch {
+      toast.error('Gagal memperpanjang rental')
+    } finally {
+      setExtending(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -81,7 +106,12 @@ export default function RentalDetailScreen() {
     )
   }
 
-  const vehicle = rental.vehicle as Record<string, unknown> | undefined
+  const vehicle = rental.vehicle as Vehicle | undefined
+  const canExtend = rental.status === 'ACTIVE' || rental.status === 'PENDING'
+
+  const harga24 = vehicle?.hargaSewa ?? 0
+  const harga12 = vehicle?.hargaSewa12Jam ?? Math.round(harga24 / 2)
+  const harga6 = Math.round(harga12 / 2)
 
   return (
     <div className="min-h-screen bg-background pb-8">
@@ -110,16 +140,16 @@ export default function RentalDetailScreen() {
           <Card className="border-0 shadow-md rounded-2xl">
             <CardContent className="p-4 flex items-center gap-4">
               <div className="w-16 h-16 bg-gradient-to-br from-qia-light to-muted rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
-                {vehicle.foto as string ? (
-                  <img src={vehicle.foto as string} alt={vehicle.namaMobil as string} className="w-full h-full object-cover" />
+                {vehicle.foto ? (
+                  <img src={vehicle.foto} alt={vehicle.namaMobil} className="w-full h-full object-cover" />
                 ) : (
                   <Car className="w-8 h-8 text-primary/30" />
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="font-semibold truncate">{vehicle.namaMobil as string}</p>
+                <p className="font-semibold truncate">{vehicle.namaMobil}</p>
                 <p className="text-xs text-muted-foreground">
-                  {vehicle.merk as string} &bull; {vehicle.platNomor as string}
+                  {vehicle.merk} &bull; {vehicle.platNomor}
                 </p>
               </div>
             </CardContent>
@@ -166,6 +196,45 @@ export default function RentalDetailScreen() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Extend Rental */}
+        {canExtend && (
+          <Card className="border-0 shadow-md rounded-2xl">
+            <CardContent className="p-5 space-y-3">
+              <h3 className="text-sm font-semibold flex items-center gap-2">
+                <Timer className="w-4 h-4 text-primary" />
+                Perpanjang Waktu
+              </h3>
+              <p className="text-xs text-muted-foreground">Pilih durasi perpanjangan yang diinginkan</p>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  onClick={() => handleExtend(6)}
+                  disabled={extending}
+                  className="p-3 rounded-xl border-2 border-border hover:border-primary/50 text-center transition-all active:scale-95 disabled:opacity-50"
+                >
+                  <p className="text-xs text-muted-foreground">6 Jam</p>
+                  <p className="text-sm font-bold text-primary mt-0.5">{formatPrice(harga6)}</p>
+                </button>
+                <button
+                  onClick={() => handleExtend(12)}
+                  disabled={extending}
+                  className="p-3 rounded-xl border-2 border-border hover:border-primary/50 text-center transition-all active:scale-95 disabled:opacity-50"
+                >
+                  <p className="text-xs text-muted-foreground">12 Jam</p>
+                  <p className="text-sm font-bold text-primary mt-0.5">{formatPrice(harga12)}</p>
+                </button>
+                <button
+                  onClick={() => handleExtend(24)}
+                  disabled={extending}
+                  className="p-3 rounded-xl border-2 border-border hover:border-primary/50 text-center transition-all active:scale-95 disabled:opacity-50"
+                >
+                  <p className="text-xs text-muted-foreground">24 Jam</p>
+                  <p className="text-sm font-bold text-primary mt-0.5">{formatPrice(harga24)}</p>
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Notes */}
         {rental.catatan && (

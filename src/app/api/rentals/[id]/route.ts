@@ -81,6 +81,50 @@ export async function PUT(
       updateData.catatan = body.catatan
     }
 
+    if (body.extendHours && session) {
+      if (existing.status !== 'ACTIVE' && existing.status !== 'PENDING') {
+        return NextResponse.json(
+          { success: false, error: 'Hanya rental aktif atau pending yang bisa diperpanjang' },
+          { status: 400 }
+        )
+      }
+
+      const hours = Number(body.extendHours)
+      if (![6, 12, 24].includes(hours)) {
+        return NextResponse.json(
+          { success: false, error: 'Durasi perpanjangan harus 6, 12, atau 24 jam' },
+          { status: 400 }
+        )
+      }
+
+      const vehicle = await db.vehicle.findUnique({ where: { id: existing.vehicleId } })
+      if (!vehicle) {
+        return NextResponse.json(
+          { success: false, error: 'Kendaraan tidak ditemukan' },
+          { status: 404 }
+        )
+      }
+
+      const v = vehicle as Record<string, number>
+      const hargaSewa24 = Number(v.hargaSewa) || 0
+      const hargaSewa12 = Number(v.hargaSewa12Jam) || Math.round(hargaSewa24 / 2)
+
+      let biayaTambahan = 0
+      if (hours === 24) {
+        biayaTambahan = hargaSewa24
+      } else if (hours === 12) {
+        biayaTambahan = hargaSewa12
+      } else {
+        biayaTambahan = Math.round(hargaSewa12 / 2)
+      }
+
+      const currentEnd = new Date(existing.tanggalKembali)
+      currentEnd.setHours(currentEnd.getHours() + hours)
+
+      updateData.tanggalKembali = currentEnd.toISOString()
+      updateData.totalHarga = Number(existing.totalHarga) + biayaTambahan
+    }
+
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json(
         { success: false, error: 'Tidak ada data yang diperbarui' },

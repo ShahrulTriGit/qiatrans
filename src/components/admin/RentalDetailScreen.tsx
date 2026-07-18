@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { ArrowLeft, Car, User, Calendar, Clock, CheckCircle2, XCircle, PlayCircle } from 'lucide-react'
+import { ArrowLeft, Car, User, Calendar, Clock, CheckCircle2, XCircle, PlayCircle, Timer } from 'lucide-react'
 import { useNavStore } from '@/stores/navStore'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { Rental, RentalStatus } from '@/types'
+import type { Rental, RentalStatus, Vehicle } from '@/types'
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount)
@@ -43,6 +43,7 @@ export default function RentalDetailScreen() {
   const [rental, setRental] = useState<Rental | null>(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
+  const [extending, setExtending] = useState(false)
 
   const fetchRental = useCallback(async () => {
     if (!selectedRentalId) return
@@ -80,6 +81,29 @@ export default function RentalDetailScreen() {
     }
   }
 
+  async function handleExtend(hours: number) {
+    if (!selectedRentalId) return
+    setExtending(true)
+    try {
+      const res = await fetch(`/api/rentals/${selectedRentalId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ extendHours: hours }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error('Gagal memperpanjang', { description: data.error })
+        return
+      }
+      toast.success(`Berhasil diperpanjang ${hours} jam`)
+      setRental(data.data)
+    } catch {
+      toast.error('Gagal memperpanjang rental')
+    } finally {
+      setExtending(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="space-y-4 animate-fade-in">
@@ -100,7 +124,12 @@ export default function RentalDetailScreen() {
   }
 
   const user = rental.user as Record<string, unknown> | undefined
-  const vehicle = rental.vehicle as Record<string, unknown> | undefined
+  const vehicle = rental.vehicle as Vehicle | undefined
+  const canExtend = rental.status === 'ACTIVE' || rental.status === 'PENDING'
+
+  const harga24 = vehicle?.hargaSewa ?? 0
+  const harga12 = vehicle?.hargaSewa12Jam ?? Math.round(harga24 / 2)
+  const harga6 = Math.round(harga12 / 2)
 
   return (
     <div className="max-w-3xl space-y-6 animate-fade-in">
@@ -162,16 +191,16 @@ export default function RentalDetailScreen() {
           {vehicle ? (
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center overflow-hidden shrink-0">
-                {vehicle.foto as string ? (
-                  <img src={vehicle.foto as string} alt={vehicle.namaMobil as string} className="w-full h-full object-cover" />
+                {vehicle.foto ? (
+                  <img src={vehicle.foto} alt={vehicle.namaMobil} className="w-full h-full object-cover" />
                 ) : (
                   <Car className="w-6 h-6 text-muted-foreground" />
                 )}
               </div>
               <div>
-                <p className="font-semibold">{vehicle.namaMobil as string}</p>
+                <p className="font-semibold">{vehicle.namaMobil}</p>
                 <p className="text-sm text-muted-foreground">
-                  {vehicle.merk as string} &bull; {vehicle.platNomor as string}
+                  {vehicle.merk} &bull; {vehicle.platNomor}
                 </p>
               </div>
             </div>
@@ -227,6 +256,47 @@ export default function RentalDetailScreen() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">{rental.catatan}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Extend Rental */}
+      {canExtend && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Timer className="w-4 h-4" />
+              Perpanjang Waktu
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-3">Pilih durasi perpanjangan</p>
+            <div className="grid grid-cols-3 gap-3">
+              <button
+                onClick={() => handleExtend(6)}
+                disabled={extending}
+                className="p-3 rounded-xl border-2 border-border hover:border-primary/50 text-center transition-all active:scale-95 disabled:opacity-50"
+              >
+                <p className="text-xs text-muted-foreground">6 Jam</p>
+                <p className="text-sm font-bold text-primary mt-0.5">{formatCurrency(harga6)}</p>
+              </button>
+              <button
+                onClick={() => handleExtend(12)}
+                disabled={extending}
+                className="p-3 rounded-xl border-2 border-border hover:border-primary/50 text-center transition-all active:scale-95 disabled:opacity-50"
+              >
+                <p className="text-xs text-muted-foreground">12 Jam</p>
+                <p className="text-sm font-bold text-primary mt-0.5">{formatCurrency(harga12)}</p>
+              </button>
+              <button
+                onClick={() => handleExtend(24)}
+                disabled={extending}
+                className="p-3 rounded-xl border-2 border-border hover:border-primary/50 text-center transition-all active:scale-95 disabled:opacity-50"
+              >
+                <p className="text-xs text-muted-foreground">24 Jam</p>
+                <p className="text-sm font-bold text-primary mt-0.5">{formatCurrency(harga24)}</p>
+              </button>
+            </div>
           </CardContent>
         </Card>
       )}
