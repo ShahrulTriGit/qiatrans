@@ -196,10 +196,27 @@ export default function RentalDetailScreen() {
 
             <Separator />
 
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">Total Harga</p>
-              <p className="text-lg font-bold text-primary">{formatPrice(rental.totalHarga)}</p>
-            </div>
+            {rental.denda ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Total Harga Sewa</span>
+                  <span>{formatPrice(rental.totalHarga - rental.denda)}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-destructive font-medium">Denda Keterlambatan</span>
+                  <span className="text-destructive font-medium">{formatPrice(rental.denda)}</span>
+                </div>
+                <div className="border-t pt-2 flex items-center justify-between">
+                  <span className="font-semibold">Total</span>
+                  <span className="text-lg font-bold text-primary">{formatPrice(rental.totalHarga)}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">Total Harga</p>
+                <p className="text-lg font-bold text-primary">{formatPrice(rental.totalHarga)}</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 

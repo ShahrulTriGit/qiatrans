@@ -247,10 +247,27 @@ export default function RentalDetailScreen() {
             </>
           )}
           <Separator className="my-3" />
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">Total Harga</p>
-            <p className="text-xl font-bold text-primary">{formatCurrency(rental.totalHarga)}</p>
-          </div>
+          {rental.denda ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Total Harga Sewa</span>
+                <span>{formatCurrency(rental.totalHarga - rental.denda)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-destructive font-medium">Denda Keterlambatan</span>
+                <span className="text-destructive font-medium">{formatCurrency(rental.denda)}</span>
+              </div>
+              <div className="border-t pt-2 flex items-center justify-between">
+                <span className="font-semibold">Total</span>
+                <p className="text-xl font-bold text-primary">{formatCurrency(rental.totalHarga)}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">Total Harga</p>
+              <p className="text-xl font-bold text-primary">{formatCurrency(rental.totalHarga)}</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 

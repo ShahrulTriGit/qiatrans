@@ -64,6 +64,7 @@ model Rental {
   tanggalPengembalian DateTime?
   status          String   @default("PENDING") // PENDING | ACTIVE | COMPLETED | CANCELLED
   totalHarga      Int
+  denda           Int      @default(0)
   durasiType      String   @default("24jam") // 24jam | 12jam
   catatan         String?
   createdAt       DateTime @default(now())

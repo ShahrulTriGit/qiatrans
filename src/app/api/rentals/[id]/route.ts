@@ -74,6 +74,40 @@ export async function PUT(
           data: { status: 'TERSEDIA' },
         })
         updateData.tanggalPengembalian = new Date().toISOString()
+
+        if (body.status === 'COMPLETED') {
+          const now = new Date()
+          const scheduledEnd = new Date(existing.tanggalKembali)
+          const [endH, endM] = (existing.jamKembali || '23:59').split(':').map(Number)
+          scheduledEnd.setHours(endH, endM, 0, 0)
+
+          const diffMs = now.getTime() - scheduledEnd.getTime()
+          const diffHours = diffMs / (1000 * 60 * 60)
+
+          if (diffHours > 2) {
+            const vehicle = await db.vehicle.findUnique({ where: { id: existing.vehicleId } })
+            const v = vehicle as Record<string, number> | null
+            const hargaSewa24 = v ? Number(v.hargaSewa) || 0 : 0
+
+            if (diffHours <= 6) {
+              updateData.denda = Math.round(hargaSewa24 * 0.25)
+            } else if (diffHours <= 12) {
+              updateData.denda = Math.round(hargaSewa24 * 0.50)
+            } else if (diffHours <= 24) {
+              updateData.denda = hargaSewa24
+            } else {
+              const extraDays = Math.ceil(diffHours / 24) - 1
+              updateData.denda = hargaSewa24 + Math.round(hargaSewa24 * 0.5 * extraDays)
+            }
+            updateData.totalHarga = Number(existing.totalHarga) + Number(updateData.denda)
+          } else if (diffHours > 0 && diffHours <= 2) {
+            const vehicle = await db.vehicle.findUnique({ where: { id: existing.vehicleId } })
+            const v = vehicle as Record<string, number> | null
+            const hargaSewa24 = v ? Number(v.hargaSewa) || 0 : 0
+            updateData.denda = Math.round(hargaSewa24 * 0.10)
+            updateData.totalHarga = Number(existing.totalHarga) + Number(updateData.denda)
+          }
+        }
       }
     }
 
