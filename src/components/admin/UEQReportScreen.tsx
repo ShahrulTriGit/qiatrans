@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { Download } from 'lucide-react'
 import {
   Card,
   CardContent,
@@ -9,6 +10,7 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
   Table,
@@ -62,6 +64,8 @@ function getScoreBadgeVariant(score: number) {
 export default function UEQReportScreen() {
   const [results, setResults] = useState<UEQResult[]>([])
   const [loading, setLoading] = useState(true)
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
 
   const fetchResults = useCallback(async () => {
     try {
@@ -81,9 +85,15 @@ export default function UEQReportScreen() {
     fetchResults()
   }, [fetchResults])
 
+  const filteredResults = results.filter((r) => {
+    if (dateFrom && r.createdAt < dateFrom) return false
+    if (dateTo && r.createdAt > dateTo + 'T23:59:59') return false
+    return true
+  })
+
   // Calculate average scores for each scale
   const averages = UEQ_SCALES.map((scale) => {
-    const values = results.map((r) => r[scale.key])
+    const values = filteredResults.map((r) => r[scale.key])
     const avg = values.length > 0 ? values.reduce((sum, v) => sum + v, 0) / values.length : 0
     return {
       dimension: scale.label,
@@ -91,6 +101,32 @@ export default function UEQReportScreen() {
       fullMark: 3,
     }
   })
+
+  function handleExport() {
+    const headers = ['ID', 'Responden', 'Rental ID', 'Attractiveness', 'Perspicuity', 'Efficiency', 'Dependability', 'Stimulation', 'Novelty', 'Tanggal']
+    const rows = filteredResults.map((r) => [
+      r.id,
+      r.user?.nama || '-',
+      r.rentalId,
+      r.attractiveness.toFixed(2),
+      r.perspicuity.toFixed(2),
+      r.efficiency.toFixed(2),
+      r.dependability.toFixed(2),
+      r.stimulation.toFixed(2),
+      r.novelty.toFixed(2),
+      r.createdAt,
+    ])
+
+    const csv = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `ueq-report-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    toast.success('Laporan UEQ berhasil diekspor')
+  }
 
   if (loading) {
     return (
@@ -106,10 +142,48 @@ export default function UEQReportScreen() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Laporan UEQ</h1>
-        <p className="text-muted-foreground mt-1">User Experience Questionnaire - {results.length} responden</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Laporan UEQ</h1>
+          <p className="text-muted-foreground mt-1">User Experience Questionnaire - {filteredResults.length} responden</p>
+        </div>
+        <Button variant="outline" onClick={handleExport}>
+          <Download className="w-4 h-4 mr-2" /> Ekspor CSV
+        </Button>
       </div>
+
+      {/* Date Range Filter */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row gap-3 items-end">
+            <div className="flex-1 space-y-1">
+              <label className="text-sm font-medium text-muted-foreground">Dari Tanggal</label>
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
+            </div>
+            <div className="flex-1 space-y-1">
+              <label className="text-sm font-medium text-muted-foreground">Sampai Tanggal</label>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => { setDateFrom(''); setDateTo('') }}
+              className="shrink-0"
+            >
+              Reset
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Radar Chart & Average Scores */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -199,14 +273,14 @@ export default function UEQReportScreen() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {results.length === 0 ? (
+                {filteredResults.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                       Tidak ada data UEQ
                     </TableCell>
                   </TableRow>
                 ) : (
-                  results.map((result) => (
+                  filteredResults.map((result) => (
                     <TableRow key={result.id}>
                       <TableCell className="font-medium">
                         {result.user?.nama || `User ${result.userId.slice(0, 6)}`}
@@ -237,10 +311,10 @@ export default function UEQReportScreen() {
           </div>
           {/* Mobile cards */}
           <div className="md:hidden space-y-3 max-h-96 overflow-y-auto">
-            {results.length === 0 ? (
+            {filteredResults.length === 0 ? (
               <p className="text-center py-8 text-muted-foreground">Tidak ada data UEQ</p>
             ) : (
-              results.map((result) => (
+              filteredResults.map((result) => (
                 <div key={result.id} className="p-4 border border-border rounded-lg">
                   <p className="font-medium text-sm mb-2">{result.user?.nama || `User ${result.userId.slice(0, 6)}`}</p>
                   <div className="grid grid-cols-3 gap-2 text-xs">

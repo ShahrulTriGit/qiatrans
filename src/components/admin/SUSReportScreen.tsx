@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import {
   BarChart3,
   UserCheck,
+  Download,
 } from 'lucide-react'
 import {
   Card,
@@ -13,6 +14,7 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
   Table,
@@ -52,6 +54,8 @@ function getScoreColor(score: number) {
 export default function SUSReportScreen() {
   const [results, setResults] = useState<SUSResult[]>([])
   const [loading, setLoading] = useState(true)
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
 
   const fetchResults = useCallback(async () => {
     try {
@@ -71,8 +75,14 @@ export default function SUSReportScreen() {
     fetchResults()
   }, [fetchResults])
 
-  const averageScore = results.length > 0
-    ? results.reduce((sum, r) => sum + r.skor, 0) / results.length
+  const filteredResults = results.filter((r) => {
+    if (dateFrom && r.createdAt < dateFrom) return false
+    if (dateTo && r.createdAt > dateTo + 'T23:59:59') return false
+    return true
+  })
+
+  const averageScore = filteredResults.length > 0
+    ? filteredResults.reduce((sum, r) => sum + r.skor, 0) / filteredResults.length
     : 0
 
   const interpretation = getScoreInterpretation(averageScore)
@@ -88,12 +98,36 @@ export default function SUSReportScreen() {
 
   const distributionData = ranges.map((range) => ({
     range: range.range,
-    count: results.filter((r) => r.skor >= range.min && r.skor < range.max).length +
-      (range.max === 100 ? results.filter((r) => r.skor === 100).length : 0),
+    count: filteredResults.filter((r) => r.skor >= range.min && r.skor < range.max).length +
+      (range.max === 100 ? filteredResults.filter((r) => r.skor === 100).length : 0),
   }))
 
   // Gauge percentage
   const gaugePercent = Math.min(100, Math.max(0, averageScore))
+
+  function handleExport() {
+    const headers = ['ID', 'Responden', 'Rental ID', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8', 'Q9', 'Q10', 'Skor SUS', 'Interpretasi', 'Tanggal']
+    const rows = filteredResults.map((r) => [
+      r.id,
+      r.user?.nama || '-',
+      r.rentalId,
+      r.q1, r.q2, r.q3, r.q4, r.q5,
+      r.q6, r.q7, r.q8, r.q9, r.q10,
+      r.skor.toFixed(1),
+      getScoreInterpretation(r.skor).label,
+      r.createdAt,
+    ])
+
+    const csv = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `sus-report-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    toast.success('Laporan SUS berhasil diekspor')
+  }
 
   if (loading) {
     return (
@@ -109,10 +143,48 @@ export default function SUSReportScreen() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Laporan SUS</h1>
-        <p className="text-muted-foreground mt-1">System Usability Scale - {results.length} responden</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Laporan SUS</h1>
+          <p className="text-muted-foreground mt-1">System Usability Scale - {filteredResults.length} responden</p>
+        </div>
+        <Button variant="outline" onClick={handleExport}>
+          <Download className="w-4 h-4 mr-2" /> Ekspor CSV
+        </Button>
       </div>
+
+      {/* Date Range Filter */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row gap-3 items-end">
+            <div className="flex-1 space-y-1">
+              <label className="text-sm font-medium text-muted-foreground">Dari Tanggal</label>
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
+            </div>
+            <div className="flex-1 space-y-1">
+              <label className="text-sm font-medium text-muted-foreground">Sampai Tanggal</label>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => { setDateFrom(''); setDateTo('') }}
+              className="shrink-0"
+            >
+              Reset
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Average Score Card */}
       <Card>
@@ -155,7 +227,7 @@ export default function SUSReportScreen() {
                 {interpretation.label}
               </Badge>
               <p className="text-sm text-muted-foreground">
-                Berdasarkan {results.length} responden
+                Berdasarkan {filteredResults.length} responden
               </p>
               <div className="text-xs text-muted-foreground space-y-0.5 mt-2">
                 <p>0-32.5: Worst Imaginable</p>
@@ -218,14 +290,14 @@ export default function SUSReportScreen() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {results.length === 0 ? (
+                {filteredResults.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                       Tidak ada data SUS
                     </TableCell>
                   </TableRow>
                 ) : (
-                  results.map((result) => {
+                  filteredResults.map((result) => {
                     const interp = getScoreInterpretation(result.skor)
                     return (
                       <TableRow key={result.id}>
@@ -254,10 +326,10 @@ export default function SUSReportScreen() {
           </div>
           {/* Mobile cards */}
           <div className="md:hidden space-y-3 max-h-96 overflow-y-auto">
-            {results.length === 0 ? (
+            {filteredResults.length === 0 ? (
               <p className="text-center py-8 text-muted-foreground">Tidak ada data SUS</p>
             ) : (
-              results.map((result) => {
+              filteredResults.map((result) => {
                 const interp = getScoreInterpretation(result.skor)
                 return (
                   <div key={result.id} className="p-4 border border-border rounded-lg">
