@@ -55,7 +55,9 @@ export default function AdminSidebar() {
           </div>
           <div>
             <h1 className="text-base font-bold">QiaTrans</h1>
-            <p className="text-[11px] text-sidebar-foreground/60">Admin Panel</p>
+            <p className="text-[11px] text-sidebar-foreground/60">
+              {session?.user?.role === 'OWNER' ? 'Owner Panel' : session?.user?.role === 'SUPER_ADMIN' ? 'Super Admin Panel' : 'Admin Panel'}
+            </p>
           </div>
         </div>
       </SidebarHeader>
