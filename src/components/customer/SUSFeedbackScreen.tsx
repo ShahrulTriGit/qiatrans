@@ -22,16 +22,16 @@ import {
 } from 'lucide-react'
 
 const SUS_QUESTIONS = [
-  'Saya pikir saya akan sering menggunakan sistem ini',
-  'Saya menemukan sistem ini tidak perlu rumit',
-  'Saya pikir sistem ini mudah digunakan',
-  'Saya pikir saya akan membutuhkan dukungan teknis untuk menggunakan sistem ini',
-  'Saya menemukan berbagai fungsi dalam sistem ini terintegrasi dengan baik',
-  'Saya pikir ada terlalu banyak inkonsistensi dalam sistem ini',
-  'Saya membayangkan kebanyakan orang akan belajar menggunakan sistem ini dengan sangat cepat',
-  'Saya menemukan sistem ini sangat rumit untuk digunakan',
-  'Saya merasa sangat percaya diri menggunakan sistem ini',
-  'Saya perlu belajar banyak hal sebelum dapat mulai menggunakan sistem ini',
+  'Saya merasa akan sering menggunakan aplikasi QiaTrans',
+  'Saya merasa aplikasi QiaTrans terlalu rumit untuk digunakan',
+  'Saya merasa aplikasi QiaTrans mudah digunakan',
+  'Saya membutuhkan bantuan orang lain untuk dapat menggunakan aplikasi QiaTrans',
+  'Saya merasa fitur-fitur pada aplikasi QiaTrans terintegrasi dengan baik',
+  'Saya merasa terdapat banyak ketidakkonsistenan pada aplikasi QiaTrans',
+  'Saya merasa sebagian besar pengguna dapat mempelajari penggunaan aplikasi QiaTrans dengan cepat',
+  'Saya merasa aplikasi QiaTrans membingungkan saat digunakan',
+  'Saya merasa percaya diri ketika menggunakan aplikasi QiaTrans',
+  'Saya merasa perlu mempelajari banyak hal sebelum dapat menggunakan aplikasi QiaTrans',
 ]
 
 const LIKERT_LABELS = [

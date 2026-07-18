@@ -77,16 +77,16 @@ model SUSResult {
   id          String   @id @default(cuid())
   userId      String
   rentalId    String
-  q1          Int // Saya pikir saya akan sering menggunakan sistem ini
-  q2          Int // Saya menemukan sistem ini tidak perlu rumit
-  q3          Int // Saya pikir sistem ini mudah digunakan
-  q4          Int // Saya pikir saya akan membutuhkan dukungan teknis untuk menggunakan sistem ini
-  q5          Int // Saya menemukan berbagai fungsi dalam sistem ini terintegrasi dengan baik
-  q6          Int // Saya pikir ada terlalu banyak inkonsistensi dalam sistem ini
-  q7          Int // Saya membayangkan kebanyakan orang akan belajar menggunakan sistem ini dengan sangat cepat
-  q8          Int // Saya menemukan sistem ini sangat rumit untuk digunakan
-  q9          Int // Saya merasa sangat percaya diri menggunakan sistem ini
-  q10         Int // Saya perlu belajar banyak hal sebelum dapat mulai menggunakan sistem ini
+  q1          Int // Saya merasa akan sering menggunakan aplikasi QiaTrans
+  q2          Int // Saya merasa aplikasi QiaTrans terlalu rumit untuk digunakan
+  q3          Int // Saya merasa aplikasi QiaTrans mudah digunakan
+  q4          Int // Saya membutuhkan bantuan orang lain untuk dapat menggunakan aplikasi QiaTrans
+  q5          Int // Saya merasa fitur-fitur pada aplikasi QiaTrans terintegrasi dengan baik
+  q6          Int // Saya merasa terdapat banyak ketidakkonsistenan pada aplikasi QiaTrans
+  q7          Int // Saya merasa sebagian besar pengguna dapat mempelajari penggunaan aplikasi QiaTrans dengan cepat
+  q8          Int // Saya merasa aplikasi QiaTrans membingungkan saat digunakan
+  q9          Int // Saya merasa percaya diri ketika menggunakan aplikasi QiaTrans
+  q10         Int // Saya merasa perlu mempelajari banyak hal sebelum dapat menggunakan aplikasi QiaTrans
   skor        Float
   createdAt   DateTime @default(now())
 
